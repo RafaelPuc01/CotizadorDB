@@ -1,392 +1,874 @@
-<script>
-  const WHATSAPP_TIENDA = "522741352901"; // WhatsApp oficial Tienda Dulce Bocado
-  let isStaffLoggedIn = false;
-  let uploadedImageBase64 = null;
-  let currentFolio = generateFolio();
-
-  // Base de datos local
-  let cotizacionesDB = [
-    {
-      folio: "#DB-8492",
-      fecha: "2026-10-05",
-      cliente: "María López",
-      telefono: "2741234567",
-      porciones: 30,
-      pisos: 2,
-      pan: "Vainilla Tradicional",
-      relleno: "Frutos Rojos Silvestres",
-      estilo: "Temático / Personalizado",
-      extras: ["Cake Topper Personalizado"],
-      notas: "Temática de Minnie Mouse, letrero con 'Sofía 3 años'",
-      foto: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=400&auto=format&fit=crop&q=80",
-      precioFinal: null,
-      estado: "pendiente_produccion"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dulce Bocado - Cotizador & Sistema de Gestión</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf8f6',
+              100: '#f2e8e5',
+              200: '#e8d5cf',
+              500: '#c28575',
+              600: '#ab6c5b',
+              700: '#8f5344',
+              800: '#754336',
+              900: '#4a2820',
+            },
+            cream: {
+              50: '#fcfbf7',
+              100: '#f7f4ea',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          }
+        }
+      }
     }
-  ];
+  </script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f7f4ea; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e8d5cf; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-cream-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between custom-scrollbar">
 
-  function generateFolio() {
-    return '#DB-' + Math.floor(1000 + Math.random() * 9000);
-  }
+  <!-- HEADER -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-brand-100 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-xl shadow-inner">
+          🍰
+        </div>
+        <div>
+          <h1 class="font-serif font-bold text-xl text-brand-900 leading-tight">Dulce Bocado</h1>
+          <p class="text-xs text-brand-600 tracking-wider font-semibold uppercase">Cotizador & Sistema de Gestión</p>
+        </div>
+      </div>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById('summaryFolio').innerText = currentFolio;
-    updateSummary();
-  });
+      <!-- Header actions -->
+      <div class="flex items-center space-x-3">
+        <a href="https://wa.me/522741352901" target="_blank" class="hidden sm:flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition border border-emerald-200 font-medium">
+          <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
+          <span>Tienda: 274 135 2901</span>
+        </a>
+        <div id="staffIndicator" class="hidden flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-xs font-medium text-amber-800">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span>Panel Interno Activo</span>
+          <button onclick="logoutStaff()" class="ml-1 text-amber-900 underline hover:text-red-600">Salir</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  // Actualiza Resumen en Lateral
-  function updateSummary() {
-    const porciones = document.getElementById('inputPorciones').value;
-    const pisos = document.querySelector('input[name="pisos"]:checked').value;
-    const pan = document.getElementById('selectPan').value;
-    const relleno = document.getElementById('selectRelleno').value;
-    const estilo = document.querySelector('input[name="estilo"]:checked').value;
+  <!-- MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
 
-    document.getElementById('labelPorciones').innerText = porciones;
-    document.getElementById('sumPorciones').innerText = `${porciones} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
-    
-    document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
-    document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
-    document.getElementById('sumEstilo').innerText = estilo;
-    document.getElementById('sumFoto').innerHTML = uploadedImageBase64 ? `<span class="text-emerald-600 font-bold">✓ Adjuntada</span>` : `<span class="text-red-500 font-bold">❌ Pendiente</span>`;
+    <!-- VISTA 1: CLIENTE (COTIZADOR) -->
+    <div id="viewCustomer" class="block">
+      <div class="mb-8 text-center max-w-2xl mx-auto">
+        <span class="text-brand-600 text-xs font-extrabold uppercase tracking-widest bg-brand-100 px-3 py-1 rounded-full">Solicitud de Cotización</span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-900 mt-2">Cotiza tu Pastel Personalizado</h2>
+        <p class="text-gray-600 text-sm mt-2">Completa <b>todos los campos obligatorios (*)</b> para enviar tu solicitud al equipo de Producción y Tienda.</p>
+      </div>
 
-    validateForm();
-  }
+      <form id="quoteForm" oninput="validateForm()" onchange="validateForm()" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- FORMULARIO CLIENTE (COL 8) -->
+        <div class="lg:col-span-8 space-y-6">
 
-  // Carga de Imagen
-  function handleImageUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        uploadedImageBase64 = e.target.result;
-        document.getElementById('uploadPlaceholder').classList.add('hidden');
-        document.getElementById('uploadPreview').classList.remove('hidden');
-        document.getElementById('imgPreviewSrc').src = e.target.result;
-        document.getElementById('imgPreviewName').innerText = file.name;
-        updateSummary();
+          <!-- PASO 1: TAMAÑO Y PORCIONES -->
+          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+            <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">1</span>
+              <h3 class="font-serif font-bold text-lg text-brand-900">Tamaño y Estructura *</h3>
+            </div>
+
+            <!-- Porciones -->
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-gray-700">Número de porciones:</label>
+                <span class="text-brand-700 font-bold text-lg bg-brand-50 px-3 py-1 rounded-lg border border-brand-100">
+                  <span id="labelPorciones">20</span> personas
+                </span>
+              </div>
+              <input type="range" id="inputPorciones" min="10" max="100" step="5" value="20" oninput="updateSummary()"
+                class="w-full h-2 bg-brand-100 rounded-lg appearance-none cursor-pointer accent-brand-600">
+              <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <span>10 pers.</span>
+                <span>50 pers.</span>
+                <span>100+ pers.</span>
+              </div>
+            </div>
+
+            <!-- Pisos -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Estructura del pastel:</label>
+              <div class="grid grid-cols-3 gap-3">
+                <label class="cursor-pointer">
+                  <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
+                    <p class="font-bold text-sm text-brand-900">1 Piso</p>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
+                    <p class="font-bold text-sm text-brand-900">2 Pisos</p>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
+                    <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 2: SABORES Y RELLENOS -->
+          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+            <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">2</span>
+              <h3 class="font-serif font-bold text-lg text-brand-900">Sabores y Rellenos *</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Sabor de Pan (Bizcocho) *</label>
+                <select id="selectPan" onchange="updateSummary()" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  <option value="">-- Selecciona un sabor --</option>
+                  <option value="Vainilla Tradicional">Vainilla Tradicional</option>
+                  <option value="Chocolate Intenso">Chocolate Intenso</option>
+                  <option value="Red Velvet">Red Velvet</option>
+                  <option value="Zanahoria & Especias">Zanahoria & Especias</option>
+                  <option value="Marmolado">Marmolado (Vainilla/Choc)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Relleno Principal *</label>
+                <select id="selectRelleno" onchange="updateSummary()" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  <option value="">-- Selecciona un relleno --</option>
+                  <option value="Cajeta con Nuez">Cajeta horneada con Nuez</option>
+                  <option value="Crema de Nutella">Crema de Nutella</option>
+                  <option value="Frutos Rojos Silvestres">Frutos Rojos Silvestres</option>
+                  <option value="Queso Crema con Zarzamora">Queso Crema con Zarzamora</option>
+                  <option value="Durazno con Crema Pastelera">Durazno con Crema Pastelera</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 3: ESTILO Y COMPLEMENTOS -->
+          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+            <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">3</span>
+              <h3 class="font-serif font-bold text-lg text-brand-900">Estilo de Decoración *</h3>
+            </div>
+
+            <div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="cursor-pointer">
+                  <input type="radio" name="estilo" value="Sencillo / Clásico" checked onclick="updateSummary()" class="peer hidden">
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl transition">
+                    <p class="font-bold text-sm text-brand-900">Liso / Sencillo</p>
+                  </div>
+                </label>
+
+                <label class="cursor-pointer">
+                  <input type="radio" name="estilo" value="Tendencia / Drip Cake" onclick="updateSummary()" class="peer hidden">
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl transition">
+                    <p class="font-bold text-sm text-brand-900">Tendencia / Drip</p>
+                  </div>
+                </label>
+
+                <label class="cursor-pointer">
+                  <input type="radio" name="estilo" value="Temático / Personalizado" onclick="updateSummary()" class="peer hidden">
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl transition">
+                    <p class="font-bold text-sm text-brand-900">Temático / Personalizado</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Complementos adicionales:</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <label class="flex items-center space-x-2 text-xs bg-gray-50 p-2.5 rounded-lg border cursor-pointer hover:bg-brand-50">
+                  <input type="checkbox" id="extraTopper" onchange="updateSummary()" class="rounded text-brand-600 focus:ring-brand-500">
+                  <span>Cake Topper Personalizado</span>
+                </label>
+                <label class="flex items-center space-x-2 text-xs bg-gray-50 p-2.5 rounded-lg border cursor-pointer hover:bg-brand-50">
+                  <input type="checkbox" id="extraFlores" onchange="updateSummary()" class="rounded text-brand-600 focus:ring-brand-500">
+                  <span>Flores Naturales</span>
+                </label>
+                <label class="flex items-center space-x-2 text-xs bg-gray-50 p-2.5 rounded-lg border cursor-pointer hover:bg-brand-50">
+                  <input type="checkbox" id="extraLuz" onchange="updateSummary()" class="rounded text-brand-600 focus:ring-brand-500">
+                  <span>Luces / Velas</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 4: DATOS CLIENTE + IMAGEN OBLIGATORIA -->
+          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+            <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">4</span>
+              <h3 class="font-serif font-bold text-lg text-brand-900">Foto de Referencia y Tus Datos *</h3>
+            </div>
+
+            <!-- Upload de Imagen Obligatorio -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Imagen / Foto de Referencia (Obligatorio) *</label>
+              <div class="border-2 border-dashed border-brand-200 bg-brand-50/30 rounded-xl p-4 text-center cursor-pointer relative hover:border-brand-500 transition">
+                <input type="file" id="inputImage" accept="image/*" required onchange="handleImageUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                <div id="uploadPlaceholder">
+                  <i class="fas fa-camera text-2xl text-brand-500 mb-1"></i>
+                  <p class="text-xs text-gray-600 font-medium">Adjunta una foto o ejemplo de la idea de pastel que deseas *</p>
+                  <p class="text-[10px] text-gray-400">Archivos PNG, JPG o WEBP</p>
+                </div>
+                <div id="uploadPreview" class="hidden flex items-center justify-center space-x-3">
+                  <img id="imgPreviewSrc" src="" alt="Vista previa" class="w-16 h-16 object-cover rounded-lg border border-brand-200">
+                  <div class="text-left">
+                    <p id="imgPreviewName" class="text-xs font-semibold text-brand-900 truncate max-w-[200px]"></p>
+                    <p class="text-[10px] text-emerald-600 font-bold">✓ Foto adjuntada correctamente</p>
+                    <span class="text-[10px] text-brand-600 underline">Cambiar foto</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Tu Nombre Completo *</label>
+                <input type="text" id="inputNombre" required placeholder="Ej. María López" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Teléfono (WhatsApp) *</label>
+                <input type="tel" id="inputTel" required placeholder="Ej. 2741234567" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Fecha de Evento *</label>
+                <input type="date" id="inputFecha" required class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Detalles o especificaciones adicionales:</label>
+              <textarea id="inputNotas" rows="2" placeholder="Colores requeridos, dedicatoria o letrero en el pastel..." class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RESUMEN / BOTÓN CONDICIONADO (COL 4) -->
+        <div class="lg:col-span-4 sticky top-24">
+          <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-md space-y-5">
+            <h3 class="font-serif font-bold text-xl text-brand-900 border-b border-gray-100 pb-3 flex items-center justify-between">
+              <span>Ficha Técnica</span>
+              <span id="summaryFolio" class="text-xs font-mono font-normal text-brand-600 bg-brand-50 px-2 py-0.5 rounded">#DB-8492</span>
+            </h3>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Porciones:</span>
+                <span id="sumPorciones" class="font-semibold text-gray-800">20 pers. (1 Piso)</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Sabor Bizcocho:</span>
+                <span id="sumPan" class="font-semibold text-gray-400 italic">Sin seleccionar</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Relleno:</span>
+                <span id="sumRelleno" class="font-semibold text-gray-400 italic">Sin seleccionar</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Estilo:</span>
+                <span id="sumEstilo" class="font-semibold text-gray-800">Sencillo / Clásico</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Foto Referencia:</span>
+                <span id="sumFoto" class="font-bold text-red-500">❌ Pendiente</span>
+              </div>
+            </div>
+
+            <!-- Indicador de Campos Pendientes -->
+            <div id="validationWarning" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center text-xs text-amber-800">
+              <i class="fas fa-exclamation-circle text-amber-600 mr-1"></i>
+              <span>Por favor completa todos los campos con (*) para activar el botón.</span>
+            </div>
+
+            <!-- Botón Mandar a Cotizar -->
+            <button type="button" id="btnMandarCotizar" disabled onclick="submitQuoteRequest()" 
+              class="w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
+              <i class="fab fa-whatsapp text-lg"></i>
+              <span>Mandar a Cotizar</span>
+            </button>
+
+            <!-- Contenedor dinámico de respuesta directa post-envío -->
+            <div id="directWaContainer" class="hidden"></div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+
+    <!-- VISTA 2: PANEL INTERNO (PRODUCCIÓN & VENTAS) -->
+    <div id="viewStaff" class="hidden space-y-6">
+      
+      <!-- SUB-HEADER INTERNO -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 pb-4 gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">Sistema Interno Dulce Bocado</span>
+          <h2 class="font-serif text-2xl font-bold text-brand-900 mt-1">Gestión y Evaluación de Cotizaciones</h2>
+        </div>
+
+        <div class="flex bg-gray-100 p-1 rounded-xl space-x-1">
+          <button id="tabProduccionBtn" onclick="switchStaffTab('produccion')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm">
+            <i class="fas fa-utensils mr-1"></i> Producción
+          </button>
+          <button id="tabVentasBtn" onclick="switchStaffTab('ventas')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900">
+            <i class="fas fa-paper-plane mr-1"></i> Ventas & Notificaciones
+          </button>
+        </div>
+      </div>
+
+      <!-- SECCIÓN A: PANEL DE PRODUCCIÓN -->
+      <div id="tabProduccion" class="space-y-4">
+        <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center justify-between">
+          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos del pastel, visualiza la imagen de referencia y asigna el precio exacto.</span>
+          <span class="font-bold bg-amber-200 px-2.5 py-1 rounded-full text-[11px]" id="countProduccionPending">0 pendientes</span>
+        </div>
+
+        <div id="cardsProduccionContainer" class="grid grid-cols-1 gap-4">
+          <!-- Render dinámico desde JS -->
+        </div>
+      </div>
+
+      <!-- SECCIÓN B: PANEL DE VENTAS -->
+      <div id="tabVentas" class="hidden space-y-8">
+        
+        <!-- BLOQUE 1: PENDIENTES POR NOTIFICAR AL CLIENTE -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center bg-rose-50 border border-rose-200 p-3.5 rounded-xl">
+            <div class="flex items-center space-x-2 text-rose-900 font-bold text-sm">
+              <i class="fas fa-bell text-rose-600 animate-bounce"></i>
+              <span>⚠️ PENDIENTES POR NOTIFICAR AL CLIENTE</span>
+            </div>
+            <span id="badgeVentasPending" class="bg-rose-600 text-white font-extrabold px-3 py-0.5 rounded-full text-xs">0 ALERTAS</span>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-rose-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-rose-50/50 border-b border-rose-100 text-[11px] uppercase tracking-wider text-rose-900">
+                    <th class="p-3">Folio</th>
+                    <th class="p-3">Cliente / Teléfono</th>
+                    <th class="p-3">Detalles</th>
+                    <th class="p-3">Precio Asignado</th>
+                    <th class="p-3 text-right">Notificación WhatsApp</th>
+                  </tr>
+                </thead>
+                <tbody id="tableVentasPending" class="divide-y divide-gray-100 text-xs">
+                  <!-- Render dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOQUE 2: YA NOTIFICADAS (HISTÓRICO) -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
+            <div class="flex items-center space-x-2 text-emerald-900 font-bold text-sm">
+              <i class="fas fa-check-circle text-emerald-600"></i>
+              <span>✅ COTIZACIONES YA NOTIFICADAS</span>
+            </div>
+            <span id="badgeVentasDone" class="bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full text-xs">0 enviadas</span>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-gray-50 border-b border-gray-200 text-[11px] uppercase tracking-wider text-gray-500">
+                    <th class="p-3">Folio</th>
+                    <th class="p-3">Cliente</th>
+                    <th class="p-3">Precio</th>
+                    <th class="p-3">Estatus</th>
+                  </tr>
+                </thead>
+                <tbody id="tableVentasDone" class="divide-y divide-gray-100 text-xs">
+                  <!-- Render dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL ZOOM DE IMAGEN -->
+  <div id="modalImageZoom" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeImageZoom()">
+    <div class="max-w-2xl w-full text-center relative" onclick="event.stopPropagation()">
+      <img id="imgZoomSrc" src="" class="max-h-[80vh] max-w-full mx-auto rounded-2xl shadow-2xl border-2 border-white">
+      <button onclick="closeImageZoom()" class="mt-4 bg-white text-gray-900 font-bold px-4 py-2 rounded-full text-xs">Cerrar Visor</button>
+    </div>
+  </div>
+
+  <!-- MODAL LOGIN -->
+  <div id="modalLogin" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-brand-100 relative">
+      <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+
+      <div class="text-center space-y-2 mb-5">
+        <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fas fa-lock"></i></div>
+        <h3 class="font-serif font-bold text-xl text-brand-900">Acceso Producción / Ventas</h3>
+        <p class="text-xs text-gray-500">Ingresa la clave de acceso autorizada.</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">PIN de Acceso:</label>
+          <input type="password" id="inputPass" placeholder="Ej. 1234" required class="w-full border border-gray-300 rounded-xl p-2.5 text-center font-mono text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          <p class="text-[10px] text-gray-400 mt-1 text-center">PIN por defecto: <b>1234</b></p>
+        </div>
+        <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 rounded-xl transition text-xs">Ingresar al Panel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-brand-100 mt-12 py-6 text-center text-xs text-gray-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>© 2026 Dulce Bocado Tierra Blanca. Todos los derechos reservados.</p>
+      <button onclick="openLoginModal()" class="text-gray-400 hover:text-brand-600 transition flex items-center space-x-1 text-[11px]">
+        <i class="fas fa-user-shield"></i>
+        <span>Acceso Staff / Producción</span>
+      </button>
+    </div>
+  </footer>
+
+
+  <!-- JAVASCRIPT CORREGIDO Y SEGURO -->
+  <script>
+    const WHATSAPP_TIENDA = "522741352901"; 
+    let isStaffLoggedIn = false;
+    let uploadedImageBase64 = null;
+    let currentFolio = generateFolio();
+
+    // Base de datos local
+    let cotizacionesDB = [
+      {
+        folio: "#DB-8492",
+        fecha: "2026-10-05",
+        cliente: "María López",
+        telefono: "2741234567",
+        porciones: 30,
+        pisos: 2,
+        pan: "Vainilla Tradicional",
+        relleno: "Frutos Rojos Silvestres",
+        estilo: "Temático / Personalizado",
+        extras: ["Cake Topper Personalizado"],
+        notas: "Temática de Minnie Mouse, letrero con 'Sofía 3 años'",
+        foto: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=400&auto=format&fit=crop&q=80",
+        precioFinal: null,
+        estado: "pendiente_produccion"
+      }
+    ];
+
+    function generateFolio() {
+      return '#DB-' + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    // ESPERAR A QUE EL DOM ESTÉ COMPLETAMENTE CARGADO PARA EVITAR EL ERROR
+    document.addEventListener("DOMContentLoaded", () => {
+      const folioEl = document.getElementById('summaryFolio');
+      if (folioEl) {
+        folioEl.innerText = currentFolio;
+      }
+      updateSummary();
+    });
+
+    // Actualiza Resumen en Lateral
+    function updateSummary() {
+      const porcionesEl = document.getElementById('inputPorciones');
+      if (!porcionesEl) return;
+
+      const porciones = porcionesEl.value;
+      const pisos = document.querySelector('input[name="pisos"]:checked').value;
+      const pan = document.getElementById('selectPan').value;
+      const relleno = document.getElementById('selectRelleno').value;
+      const estilo = document.querySelector('input[name="estilo"]:checked').value;
+
+      document.getElementById('labelPorciones').innerText = porciones;
+      document.getElementById('sumPorciones').innerText = `${porciones} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
+      
+      document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+      document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+      document.getElementById('sumEstilo').innerText = estilo;
+      document.getElementById('sumFoto').innerHTML = uploadedImageBase64 ? `<span class="text-emerald-600 font-bold">✓ Adjuntada</span>` : `<span class="text-red-500 font-bold">❌ Pendiente</span>`;
+
+      validateForm();
+    }
+
+    // Carga de Imagen
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedImageBase64 = e.target.result;
+          document.getElementById('uploadPlaceholder').classList.add('hidden');
+          document.getElementById('uploadPreview').classList.remove('hidden');
+          document.getElementById('imgPreviewSrc').src = e.target.result;
+          document.getElementById('imgPreviewName').innerText = file.name;
+          updateSummary();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // VALIDACIÓN ESTRICTA
+    function validateForm() {
+      const pan = document.getElementById('selectPan').value;
+      const relleno = document.getElementById('selectRelleno').value;
+      const nombre = document.getElementById('inputNombre').value.trim();
+      const tel = document.getElementById('inputTel').value.trim();
+      const fecha = document.getElementById('inputFecha').value;
+      const tieneFoto = uploadedImageBase64 !== null;
+
+      const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFoto;
+
+      const btn = document.getElementById('btnMandarCotizar');
+      const warning = document.getElementById('validationWarning');
+
+      if (isValid) {
+        btn.disabled = false;
+        btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm";
+        warning.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800 font-medium";
+        warning.innerHTML = `<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Todos los campos requeridos están listos!`;
+      } else {
+        btn.disabled = true;
+        btn.className = "w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm";
+        warning.className = "bg-amber-50 border border-amber-200 rounded-xl p-3 text-center text-xs text-amber-800";
+        warning.innerHTML = `<i class="fas fa-exclamation-circle text-amber-600 mr-1"></i> Falta completar campos requeridos (*)`;
+      }
+    }
+
+    // MANDAR A COTIZAR
+    function submitQuoteRequest() {
+      const nombre = document.getElementById('inputNombre').value.trim();
+      const tel = document.getElementById('inputTel').value.trim();
+      const fecha = document.getElementById('inputFecha').value;
+      const notas = document.getElementById('inputNotas').value.trim();
+      const porciones = document.getElementById('inputPorciones').value;
+      const pisos = document.querySelector('input[name="pisos"]:checked').value;
+      const pan = document.getElementById('selectPan').value;
+      const relleno = document.getElementById('selectRelleno').value;
+      const estilo = document.querySelector('input[name="estilo"]:checked').value;
+
+      let extras = [];
+      if (document.getElementById('extraTopper').checked) extras.push("Cake Topper Personalizado");
+      if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
+      if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
+
+      const nuevaCotizacion = {
+        folio: currentFolio,
+        fecha: fecha,
+        cliente: nombre,
+        telefono: tel,
+        porciones: porciones,
+        pisos: pisos,
+        pan: pan,
+        relleno: relleno,
+        estilo: estilo,
+        extras: extras,
+        notas: notas,
+        foto: uploadedImageBase64,
+        precioFinal: null,
+        estado: "pendiente_produccion"
       };
-      reader.readAsDataURL(file);
-    }
-  }
 
-  // VALIDACIÓN ESTRICTA
-  function validateForm() {
-    const pan = document.getElementById('selectPan').value;
-    const relleno = document.getElementById('selectRelleno').value;
-    const nombre = document.getElementById('inputNombre').value.trim();
-    const tel = document.getElementById('inputTel').value.trim();
-    const fecha = document.getElementById('inputFecha').value;
-    const tieneFoto = uploadedImageBase64 !== null;
+      cotizacionesDB.push(nuevaCotizacion);
 
-    const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFoto;
+      let msg = `🎂 *NUEVA SOLICITUD DE COTIZACIÓN ${currentFolio}*\n`;
+      msg += `----------------------------------------\n`;
+      msg += `👤 *Cliente:* ${nombre}\n`;
+      msg += `📱 *Teléfono:* ${tel}\n`;
+      msg += `📅 *Fecha Evento:* ${fecha}\n\n`;
+      msg += `🍰 *ESPECIFICACIONES:*\n`;
+      msg += `• *Porciones:* ${porciones} personas (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
+      msg += `• *Bizcocho:* ${pan}\n`;
+      msg += `• *Relleno:* ${relleno}\n`;
+      msg += `• *Estilo:* ${estilo}\n`;
+      msg += `• *Extras:* ${extras.length > 0 ? extras.join(', ') : 'Ninguno'}\n`;
+      if (notas) msg += `• *Notas:* ${notas}\n`;
+      msg += `----------------------------------------\n`;
+      msg += `📌 *Enviado a lista de Producción y Tienda.*`;
 
-    const btn = document.getElementById('btnMandarCotizar');
-    const warning = document.getElementById('validationWarning');
+      const urlWa = `https://wa.me/${WHATSAPP_TIENDA}?text=${encodeURIComponent(msg)}`;
 
-    if (isValid) {
-      btn.disabled = false;
-      btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm";
-      warning.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800 font-medium";
-      warning.innerHTML = `<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Todos los campos requeridos están listos!`;
-    } else {
-      btn.disabled = true;
-      btn.className = "w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm";
-      warning.className = "bg-amber-50 border border-amber-200 rounded-xl p-3 text-center text-xs text-amber-800";
-      warning.innerHTML = `<i class="fas fa-exclamation-circle text-amber-600 mr-1"></i> Falta completar campos requeridos (*)`;
-    }
-  }
+      const container = document.getElementById('directWaContainer');
+      container.innerHTML = `
+        <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full mt-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
+          <i class="fab fa-whatsapp text-lg"></i>
+          <span>Confirmar Envío por WhatsApp (${currentFolio})</span>
+        </a>
+      `;
+      container.classList.remove('hidden');
 
-  // PASO 1: ENVIAR A LISTA DE PRODUCCIÓN
-  function submitQuoteRequest() {
-    const nombre = document.getElementById('inputNombre').value.trim();
-    const tel = document.getElementById('inputTel').value.trim();
-    const fecha = document.getElementById('inputFecha').value;
-    const notas = document.getElementById('inputNotas').value.trim();
-    const porciones = document.getElementById('inputPorciones').value;
-    const pisos = document.querySelector('input[name="pisos"]:checked').value;
-    const pan = document.getElementById('selectPan').value;
-    const relleno = document.getElementById('selectRelleno').value;
-    const estilo = document.querySelector('input[name="estilo"]:checked').value;
-
-    let extras = [];
-    if (document.getElementById('extraTopper').checked) extras.push("Cake Topper Personalizado");
-    if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
-    if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
-
-    // Guardar en Producción
-    const nuevaCotizacion = {
-      folio: currentFolio,
-      fecha: fecha,
-      cliente: nombre,
-      telefono: tel,
-      porciones: porciones,
-      pisos: pisos,
-      pan: pan,
-      relleno: relleno,
-      estilo: estilo,
-      extras: extras,
-      notas: notas,
-      foto: uploadedImageBase64,
-      precioFinal: null,
-      estado: "pendiente_produccion"
-    };
-
-    cotizacionesDB.push(nuevaCotizacion);
-
-    // Mensaje formateado para WhatsApp
-    let msg = `🎂 *NUEVA SOLICITUD DE COTIZACIÓN ${currentFolio}*\n`;
-    msg += `----------------------------------------\n`;
-    msg += `👤 *Cliente:* ${nombre}\n`;
-    msg += `📱 *Teléfono:* ${tel}\n`;
-    msg += `📅 *Fecha Evento:* ${fecha}\n\n`;
-    msg += `🍰 *ESPECIFICACIONES:*\n`;
-    msg += `• *Porciones:* ${porciones} personas (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
-    msg += `• *Bizcocho:* ${pan}\n`;
-    msg += `• *Relleno:* ${relleno}\n`;
-    msg += `• *Estilo:* ${estilo}\n`;
-    msg += `• *Extras:* ${extras.length > 0 ? extras.join(', ') : 'Ninguno'}\n`;
-    if (notas) msg += `• *Notas:* ${notas}\n`;
-    msg += `----------------------------------------\n`;
-    msg += `📌 *Enviado a lista de Producción y Tienda.*`;
-
-    const urlWa = `https://wa.me/${WHATSAPP_TIENDA}?text=${encodeURIComponent(msg)}`;
-
-    // Botón verde que al hacerle clic abre WhatsApp Y LIMPIA TODO LA PÁGINA
-    const container = document.getElementById('directWaContainer');
-    container.innerHTML = `
-      <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full mt-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
-        <i class="fab fa-whatsapp text-lg"></i>
-        <span>Confirmar Envío por WhatsApp (${currentFolio})</span>
-      </a>
-    `;
-    container.classList.remove('hidden');
-
-    alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar los datos a WhatsApp. Al hacerlo, el cotizador se limpiará automáticamente.`);
-  }
-
-  // ACCIÓN AL HACER CLIC EN EL BOTÓN DE WHATSAPP: LIMPIEZA COMPLETA DESDE 0
-  function handleWhatsAppClick() {
-    setTimeout(() => {
-      resetComplete();
-    }, 500);
-  }
-
-  // FUNCIÓN DE RESETEO COMPLETO
-  function resetComplete() {
-    // 1. Limpiar formulario HTML
-    document.getElementById('quoteForm').reset();
-    
-    // 2. Limpiar variable de la imagen
-    uploadedImageBase64 = null;
-    document.getElementById('uploadPlaceholder').classList.remove('hidden');
-    document.getElementById('uploadPreview').classList.add('hidden');
-    document.getElementById('inputPorciones').value = 20;
-
-    // 3. Ocultar el botón verde de WhatsApp
-    const container = document.getElementById('directWaContainer');
-    container.innerHTML = "";
-    container.classList.add('hidden');
-
-    // 4. Generar nuevo Folio y actualizar resumen
-    currentFolio = generateFolio();
-    document.getElementById('summaryFolio').innerText = currentFolio;
-    updateSummary();
-  }
-
-  // PANEL STAFF LOGIC
-  function switchStaffTab(tab) {
-    const tabProd = document.getElementById('tabProduccion');
-    const tabVent = document.getElementById('tabVentas');
-    const btnProd = document.getElementById('tabProduccionBtn');
-    const btnVent = document.getElementById('tabVentasBtn');
-
-    if (tab === 'produccion') {
-      tabProd.classList.remove('hidden');
-      tabVent.classList.add('hidden');
-      btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm";
-      btnVent.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900";
-    } else {
-      tabProd.classList.add('hidden');
-      tabVent.classList.remove('hidden');
-      btnVent.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm";
-      btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900";
-    }
-    renderStaffPanels();
-  }
-
-  function renderStaffPanels() {
-    // 1. DIBUJAR TARJETAS VISUALES DE PRODUCCIÓN
-    const containerProd = document.getElementById('cardsProduccionContainer');
-    containerProd.innerHTML = "";
-    const pendientesProd = cotizacionesDB.filter(c => c.estado === 'pendiente_produccion');
-    document.getElementById('countProduccionPending').innerText = `${pendientesProd.length} pendientes`;
-
-    if (pendientesProd.length === 0) {
-      containerProd.innerHTML = `<div class="bg-white p-8 rounded-2xl border text-center text-gray-400 font-medium">✨ No hay solicitudes pendientes de revisión por Producción.</div>`;
-    } else {
-      cotizacionesDB.forEach((item, index) => {
-        if (item.estado === 'pendiente_produccion') {
-          const card = document.createElement('div');
-          card.className = "bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-5 items-center";
-
-          card.innerHTML = `
-            <div class="md:col-span-3 text-center">
-              ${item.foto 
-                ? `<img src="${item.foto}" onclick="openImageZoom('${item.foto}')" class="w-full h-36 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">
-                   <p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`
-                : `<div class="w-full h-36 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Foto</div>`}
-            </div>
-
-            <div class="md:col-span-5 space-y-2 text-xs">
-              <div class="flex justify-between items-center">
-                <span class="font-mono font-bold text-brand-900 text-sm">${item.folio}</span>
-                <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-bold text-[10px]">📅 ${item.fecha}</span>
-              </div>
-              <p class="text-sm font-bold text-gray-800">${item.cliente} <span class="font-normal text-gray-500">(${item.telefono})</span></p>
-              
-              <div class="bg-cream-50 p-2.5 rounded-lg border border-brand-100 space-y-1 text-[11px]">
-                <p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
-                <p><b>Sabor / Relleno:</b> ${item.pan} / ${item.relleno}</p>
-                <p><b>Estilo:</b> ${item.estilo}</p>
-                ${item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
-                ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
-              </div>
-            </div>
-
-            <div class="md:col-span-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
-              <label class="block text-xs font-bold text-amber-900">Ingresar Precio Técnico ($ MXN):</label>
-              <div class="relative">
-                <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
-                <input type="number" id="prodPrice_${index}" placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-sm font-bold border border-amber-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-              </div>
-              <button onclick="saveProductionPrice(${index})" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2 rounded-lg text-xs transition shadow">
-                <i class="fas fa-check mr-1"></i> Guardar Cotización
-              </button>
-            </div>
-          `;
-          containerProd.appendChild(card);
-        }
-      });
+      alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar los datos a WhatsApp. Al hacerlo, el cotizador se limpiará automáticamente.`);
     }
 
-    // 2. DIBUJAR TABLAS DE VENTAS
-    const tbodyVentPending = document.getElementById('tableVentasPending');
-    tbodyVentPending.innerHTML = "";
-    const pendientesVent = cotizacionesDB.filter(c => c.estado === 'cotizado_listo');
-    document.getElementById('badgeVentasPending').innerText = `${pendientesVent.length} ALERTAS`;
-
-    if (pendientesVent.length === 0) {
-      tbodyVentPending.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No hay cotizaciones pendientes por notificar.</td></tr>`;
-    } else {
-      cotizacionesDB.forEach((item, index) => {
-        if (item.estado === 'cotizado_listo') {
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-rose-50/40 transition";
-
-          let msgCliente = `✨ *¡HOLA ${item.cliente.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
-          msgCliente += `Hemos evaluado el diseño de tu pastel personalizado (*Folio ${item.folio}*):\n`;
-          msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
-          msgCliente += `• *Sabor/Relleno:* ${item.pan} / ${item.relleno}\n`;
-          msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
-          msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precioFinal} MXN*\n\n`;
-          msgCliente += `Para agendar tu fecha (*${item.fecha}*), requerimos un anticipo del 50%.\n`;
-          msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
-
-          const waLink = `https://wa.me/52${item.telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
-
-          tr.innerHTML = `
-            <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
-            <td class="p-3 font-semibold">${item.cliente}<br><span class="text-[10px] text-gray-500 font-normal">${item.telefono}</span></td>
-            <td class="p-3 text-[11px]">${item.porciones} pers. - ${item.pan}</td>
-            <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precioFinal} MXN</td>
-            <td class="p-3 text-right">
-              <a href="${waLink}" target="_blank" onclick="markAsNotified(${index})" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
-                <i class="fab fa-whatsapp text-sm"></i>
-                <span>Notificar al Cliente</span>
-              </a>
-            </td>
-          `;
-          tbodyVentPending.appendChild(tr);
-        }
-      });
+    function handleWhatsAppClick() {
+      setTimeout(() => {
+        resetComplete();
+      }, 500);
     }
 
-    const tbodyVentDone = document.getElementById('tableVentasDone');
-    tbodyVentDone.innerHTML = "";
-    const notificadasVent = cotizacionesDB.filter(c => c.estado === 'notificado_cliente');
-    document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
+    function resetComplete() {
+      document.getElementById('quoteForm').reset();
+      uploadedImageBase64 = null;
+      
+      const placeholder = document.getElementById('uploadPlaceholder');
+      const preview = document.getElementById('uploadPreview');
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (preview) preview.classList.add('hidden');
 
-    if (notificadasVent.length === 0) {
-      tbodyVentDone.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Aún no hay cotizaciones notificadas registradas.</td></tr>`;
-    } else {
-      cotizacionesDB.forEach((item) => {
-        if (item.estado === 'notificado_cliente') {
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-emerald-50/30 transition";
-          tr.innerHTML = `
-            <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
-            <td class="p-3 font-semibold">${item.cliente}</td>
-            <td class="p-3 font-bold text-emerald-700">$${item.precioFinal} MXN</td>
-            <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
-          `;
-          tbodyVentDone.appendChild(tr);
-        }
-      });
-    }
-  }
+      document.getElementById('inputPorciones').value = 20;
 
-  function saveProductionPrice(index) {
-    const priceVal = document.getElementById(`prodPrice_${index}`).value;
-    if (!priceVal || priceVal <= 0) {
-      alert("Por favor ingresa un precio válido asignado por producción.");
-      return;
+      const container = document.getElementById('directWaContainer');
+      if (container) {
+        container.innerHTML = "";
+        container.classList.add('hidden');
+      }
+
+      currentFolio = generateFolio();
+      const folioEl = document.getElementById('summaryFolio');
+      if (folioEl) {
+        folioEl.innerText = currentFolio;
+      }
+      updateSummary();
     }
 
-    cotizacionesDB[index].precioFinal = priceVal;
-    cotizacionesDB[index].estado = "cotizado_listo";
+    // PANEL STAFF
+    function switchStaffTab(tab) {
+      const tabProd = document.getElementById('tabProduccion');
+      const tabVent = document.getElementById('tabVentas');
+      const btnProd = document.getElementById('tabProduccionBtn');
+      const btnVent = document.getElementById('tabVentasBtn');
 
-    alert(`✅ Cotización ${cotizacionesDB[index].folio} guardada ($${priceVal} MXN). Pasó a la pestaña de 'Ventas' para ser notificada.`);
-    renderStaffPanels();
-  }
-
-  function markAsNotified(index) {
-    setTimeout(() => {
-      cotizacionesDB[index].estado = "notificado_cliente";
+      if (tab === 'produccion') {
+        tabProd.classList.remove('hidden');
+        tabVent.classList.add('hidden');
+        btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm";
+        btnVent.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900";
+      } else {
+        tabProd.classList.add('hidden');
+        tabVent.classList.remove('hidden');
+        btnVent.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm";
+        btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900";
+      }
       renderStaffPanels();
-    }, 1000);
-  }
-
-  function openImageZoom(src) {
-    document.getElementById('imgZoomSrc').src = src;
-    document.getElementById('modalImageZoom').classList.remove('hidden');
-  }
-
-  function closeImageZoom() {
-    document.getElementById('modalImageZoom').classList.add('hidden');
-  }
-
-  function openLoginModal() { document.getElementById('modalLogin').classList.remove('hidden'); }
-  function closeLoginModal() { document.getElementById('modalLogin').classList.add('hidden'); }
-
-  function handleLogin(e) {
-    e.preventDefault();
-    const pass = document.getElementById('inputPass').value;
-    if (pass === "1234" || pass === "admin") {
-      isStaffLoggedIn = true;
-      closeLoginModal();
-      document.getElementById('staffIndicator').classList.remove('hidden');
-      document.getElementById('viewCustomer').classList.add('hidden');
-      document.getElementById('viewStaff').classList.remove('hidden');
-      renderStaffPanels();
-    } else {
-      alert("PIN incorrecto. Intenta con 1234");
     }
-  }
 
-  function logoutStaff() {
-    isStaffLoggedIn = false;
-    document.getElementById('staffIndicator').classList.add('hidden');
-    document.getElementById('viewStaff').classList.add('hidden');
-    document.getElementById('viewCustomer').classList.remove('hidden');
-  }
-</script>
+    function renderStaffPanels() {
+      // Producción
+      const containerProd = document.getElementById('cardsProduccionContainer');
+      containerProd.innerHTML = "";
+      const pendientesProd = cotizacionesDB.filter(c => c.estado === 'pendiente_produccion');
+      document.getElementById('countProduccionPending').innerText = `${pendientesProd.length} pendientes`;
+
+      if (pendientesProd.length === 0) {
+        containerProd.innerHTML = `<div class="bg-white p-8 rounded-2xl border text-center text-gray-400 font-medium">✨ No hay solicitudes pendientes de revisión por Producción.</div>`;
+      } else {
+        cotizacionesDB.forEach((item, index) => {
+          if (item.estado === 'pendiente_produccion') {
+            const card = document.createElement('div');
+            card.className = "bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-5 items-center";
+
+            card.innerHTML = `
+              <div class="md:col-span-3 text-center">
+                ${item.foto 
+                  ? `<img src="${item.foto}" onclick="openImageZoom('${item.foto}')" class="w-full h-36 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">
+                     <p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`
+                  : `<div class="w-full h-36 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Foto</div>`}
+              </div>
+
+              <div class="md:col-span-5 space-y-2 text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-mono font-bold text-brand-900 text-sm">${item.folio}</span>
+                  <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-bold text-[10px]">📅 ${item.fecha}</span>
+                </div>
+                <p class="text-sm font-bold text-gray-800">${item.cliente} <span class="font-normal text-gray-500">(${item.telefono})</span></p>
+                
+                <div class="bg-cream-50 p-2.5 rounded-lg border border-brand-100 space-y-1 text-[11px]">
+                  <p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
+                  <p><b>Sabor / Relleno:</b> ${item.pan} / ${item.relleno}</p>
+                  <p><b>Estilo:</b> ${item.estilo}</p>
+                  ${item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
+                  ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
+                </div>
+              </div>
+
+              <div class="md:col-span-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
+                <label class="block text-xs font-bold text-amber-900">Ingresar Precio Técnico ($ MXN):</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
+                  <input type="number" id="prodPrice_${index}" placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-sm font-bold border border-amber-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <button onclick="saveProductionPrice(${index})" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2 rounded-lg text-xs transition shadow">
+                  <i class="fas fa-check mr-1"></i> Guardar Cotización
+                </button>
+              </div>
+            `;
+            containerProd.appendChild(card);
+          }
+        });
+      }
+
+      // Ventas
+      const tbodyVentPending = document.getElementById('tableVentasPending');
+      tbodyVentPending.innerHTML = "";
+      const pendientesVent = cotizacionesDB.filter(c => c.estado === 'cotizado_listo');
+      document.getElementById('badgeVentasPending').innerText = `${pendientesVent.length} ALERTAS`;
+
+      if (pendientesVent.length === 0) {
+        tbodyVentPending.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No hay cotizaciones pendientes por notificar.</td></tr>`;
+      } else {
+        cotizacionesDB.forEach((item, index) => {
+          if (item.estado === 'cotizado_listo') {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-rose-50/40 transition";
+
+            let msgCliente = `✨ *¡HOLA ${item.cliente.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
+            msgCliente += `Hemos evaluado el diseño de tu pastel personalizado (*Folio ${item.folio}*):\n`;
+            msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
+            msgCliente += `• *Sabor/Relleno:* ${item.pan} / ${item.relleno}\n`;
+            msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
+            msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precioFinal} MXN*\n\n`;
+            msgCliente += `Para agendar tu fecha (*${item.fecha}*), requerimos un anticipo del 50%.\n`;
+            msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
+
+            const waLink = `https://wa.me/52${item.telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
+
+            tr.innerHTML = `
+              <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
+              <td class="p-3 font-semibold">${item.cliente}<br><span class="text-[10px] text-gray-500 font-normal">${item.telefono}</span></td>
+              <td class="p-3 text-[11px]">${item.porciones} pers. - ${item.pan}</td>
+              <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precioFinal} MXN</td>
+              <td class="p-3 text-right">
+                <a href="${waLink}" target="_blank" onclick="markAsNotified(${index})" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
+                  <i class="fab fa-whatsapp text-sm"></i>
+                  <span>Notificar al Cliente</span>
+                </a>
+              </td>
+            `;
+            tbodyVentPending.appendChild(tr);
+          }
+        });
+      }
+
+      const tbodyVentDone = document.getElementById('tableVentasDone');
+      tbodyVentDone.innerHTML = "";
+      const notificadasVent = cotizacionesDB.filter(c => c.estado === 'notificado_cliente');
+      document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
+
+      if (notificadasVent.length === 0) {
+        tbodyVentDone.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Aún no hay cotizaciones notificadas registradas.</td></tr>`;
+      } else {
+        cotizacionesDB.forEach((item) => {
+          if (item.estado === 'notificado_cliente') {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-emerald-50/30 transition";
+            tr.innerHTML = `
+              <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
+              <td class="p-3 font-semibold">${item.cliente}</td>
+              <td class="p-3 font-bold text-emerald-700">$${item.precioFinal} MXN</td>
+              <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
+            `;
+            tbodyVentDone.appendChild(tr);
+          }
+        });
+      }
+    }
+
+    function saveProductionPrice(index) {
+      const priceVal = document.getElementById(`prodPrice_${index}`).value;
+      if (!priceVal || priceVal <= 0) {
+        alert("Por favor ingresa un precio válido asignado por producción.");
+        return;
+      }
+
+      cotizacionesDB[index].precioFinal = priceVal;
+      cotizacionesDB[index].estado = "cotizado_listo";
+
+      alert(`✅ Cotización ${cotizacionesDB[index].folio} guardada ($${priceVal} MXN). Pasó a la pestaña de 'Ventas' para ser notificada.`);
+      renderStaffPanels();
+    }
+
+    function markAsNotified(index) {
+      setTimeout(() => {
+        cotizacionesDB[index].estado = "notificado_cliente";
+        renderStaffPanels();
+      }, 1000);
+    }
+
+    function openImageZoom(src) {
+      document.getElementById('imgZoomSrc').src = src;
+      document.getElementById('modalImageZoom').classList.remove('hidden');
+    }
+
+    function closeImageZoom() {
+      document.getElementById('modalImageZoom').classList.add('hidden');
+    }
+
+    function openLoginModal() { document.getElementById('modalLogin').classList.remove('hidden'); }
+    function closeLoginModal() { document.getElementById('modalLogin').classList.add('hidden'); }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('inputPass').value;
+      if (pass === "1234" || pass === "admin") {
+        isStaffLoggedIn = true;
+        closeLoginModal();
+        document.getElementById('staffIndicator').classList.remove('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewStaff').classList.remove('hidden');
+        renderStaffPanels();
+      } else {
+        alert("PIN incorrecto. Intenta con 1234");
+      }
+    }
+
+    function logoutStaff() {
+      isStaffLoggedIn = false;
+      document.getElementById('staffIndicator').classList.add('hidden');
+      document.getElementById('viewStaff').classList.add('hidden');
+      document.getElementById('viewCustomer').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
