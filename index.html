@@ -10,8 +10,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>
+    // CREDENCIALES DE SUPABASE
+    const SUPABASE_URL = "https://gxlpghbsqxvhbvgsqdnc.supabase.co"; // Cambia por tu URL de Supabase
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4bHBnaGJzcXh2aGJ2Z3NxZG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjQzNDYsImV4cCI6MjEwNjQwMDM0Nn0.zWANafZaswbBk6gQSvHq52nEM5t4UTFvV3ewZBb-qMs";        // Cambia por tu Anon Key
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     tailwind.config = {
       theme: {
         extend: {
@@ -60,7 +67,6 @@
         </div>
       </div>
 
-      <!-- Header actions -->
       <div class="flex items-center space-x-3">
         <a href="https://wa.me/522741352901" target="_blank" class="hidden sm:flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition border border-emerald-200 font-medium">
           <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
@@ -97,7 +103,6 @@
               <h3 class="font-serif font-bold text-lg text-brand-900">Tamaño y Estructura *</h3>
             </div>
 
-            <!-- Porciones con escala personalizada -->
             <div>
               <div class="flex justify-between items-center mb-2">
                 <label class="text-sm font-semibold text-gray-700">Número de porciones:</label>
@@ -114,7 +119,6 @@
               </div>
             </div>
 
-            <!-- Pisos -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Estructura del pastel:</label>
               <div class="grid grid-cols-3 gap-3">
@@ -174,7 +178,7 @@
             </div>
           </div>
 
-          <!-- PASO 3: ESTILO DESCRITO Y COMPLEMENTOS -->
+          <!-- PASO 3: ESTILO Y COMPLEMENTOS -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">3</span>
@@ -234,21 +238,19 @@
             </div>
           </div>
 
-          <!-- PASO 4: DATOS CLIENTE + HASTA 3 FOTOS -->
+          <!-- PASO 4: DATOS CLIENTE + MÚLTIPLES FOTOS -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">4</span>
               <h3 class="font-serif font-bold text-lg text-brand-900">Fotos de Referencia y Tus Datos *</h3>
             </div>
 
-            <!-- Upload de Múltiples Imágenes (Límite 3) -->
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="block text-sm font-semibold text-gray-700">Fotos de Referencia (1 a 3 fotos) *</label>
                 <span id="photoCounterBadge" class="text-[11px] font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-100">0 / 3 fotos</span>
               </div>
 
-              <!-- Dropzone -->
               <div id="dropzoneContainer" class="border-2 border-dashed border-brand-200 bg-brand-50/30 rounded-xl p-4 text-center cursor-pointer relative hover:border-brand-500 transition">
                 <input type="file" id="inputImage" accept="image/*" multiple onchange="handleMultipleImagesUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                 <div id="uploadPlaceholder">
@@ -258,7 +260,6 @@
                 </div>
               </div>
 
-              <!-- Galería de vistas previas -->
               <div id="imagesPreviewGallery" class="grid grid-cols-3 gap-3 mt-3 hidden">
                 <!-- Se dibuja dinámicamente -->
               </div>
@@ -318,20 +319,17 @@
               </div>
             </div>
 
-            <!-- Indicador de Campos Pendientes -->
             <div id="validationWarning" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center text-xs text-amber-800">
               <i class="fas fa-exclamation-circle text-amber-600 mr-1"></i>
               <span>Por favor completa todos los campos con (*) para activar el botón.</span>
             </div>
 
-            <!-- Botón Mandar a Cotizar -->
             <button type="button" id="btnMandarCotizar" disabled onclick="submitQuoteRequest()" 
               class="w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
               <i class="fab fa-whatsapp text-lg"></i>
               <span>Mandar a Cotizar</span>
             </button>
 
-            <!-- Contenedor dinámico de respuesta directa post-envío -->
             <div id="directWaContainer" class="hidden"></div>
           </div>
         </div>
@@ -343,7 +341,6 @@
     <!-- VISTA 2: PANEL INTERNO (PRODUCCIÓN & VENTAS) -->
     <div id="viewStaff" class="hidden space-y-6">
       
-      <!-- SUB-HEADER INTERNO -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 pb-4 gap-3">
         <div>
           <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">Sistema Interno Dulce Bocado</span>
@@ -375,7 +372,7 @@
       <!-- SECCIÓN B: PANEL DE VENTAS -->
       <div id="tabVentas" class="hidden space-y-8">
         
-        <!-- BLOQUE 1: PENDIENTES POR NOTIFICAR AL CLIENTE -->
+        <!-- BLOQUE 1: PENDIENTES POR NOTIFICAR -->
         <div class="space-y-3">
           <div class="flex justify-between items-center bg-rose-50 border border-rose-200 p-3.5 rounded-xl">
             <div class="flex items-center space-x-2 text-rose-900 font-bold text-sm">
@@ -405,7 +402,7 @@
           </div>
         </div>
 
-        <!-- BLOQUE 2: YA NOTIFICADAS (HISTÓRICO) -->
+        <!-- BLOQUE 2: YA NOTIFICADAS -->
         <div class="space-y-3">
           <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
             <div class="flex items-center space-x-2 text-emerald-900 font-bold text-sm">
@@ -482,43 +479,18 @@
   </footer>
 
 
-  <!-- JAVASCRIPT CON MÚLTIPLES FOTOS Y ESCALA DE PORCIONES -->
+  <!-- JAVASCRIPT CON SUPABASE INTEGRADOR -->
   <script>
     const WHATSAPP_TIENDA = "522741352901"; 
     let isStaffLoggedIn = false;
-    
-    // Lista exacta de porciones
     const PORCIONES_LISTA = [4, 8, 12, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 150];
-    
-    // Arreglo para almacenar hasta 3 imágenes en Base64
     let uploadedImagesList = [];
     let currentFolio = generateFolio();
-
-    // Base de datos local
-    let cotizacionesDB = [
-      {
-        folio: "#DB-8492",
-        fecha: "2026-10-05",
-        cliente: "María López",
-        telefono: "2741234567",
-        porciones: 30,
-        pisos: 2,
-        pan: "Vainilla Tradicional",
-        relleno: "Frutos Rojos Silvestres",
-        estilo: "Temático / Personalizado",
-        extras: ["Cake Topper Personalizado"],
-        notas: "Temática de Minnie Mouse, letrero con 'Sofía 3 años'",
-        fotos: ["https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=400&auto=format&fit=crop&q=80"],
-        precioFinal: null,
-        estado: "pendiente_produccion"
-      }
-    ];
 
     function generateFolio() {
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
     }
 
-    // INICIALIZACIÓN SEGURA AL CARGAR EL DOM
     function initApp() {
       const folioEl = document.getElementById('summaryFolio');
       if (folioEl) {
@@ -533,7 +505,6 @@
       initApp();
     }
 
-    // Actualiza Resumen en Lateral
     function updateSummary() {
       const porcionesIndex = document.getElementById('inputPorciones') ? parseInt(document.getElementById('inputPorciones').value) : 3;
       const porcionesValor = PORCIONES_LISTA[porcionesIndex] || 20;
@@ -565,7 +536,6 @@
       validateForm();
     }
 
-    // CARGA DE HASTA 3 IMÁGENES
     function handleMultipleImagesUpload(event) {
       const files = Array.from(event.target.files);
       if (!files || files.length === 0) return;
@@ -597,7 +567,6 @@
       event.target.value = "";
     }
 
-    // DIBUJAR GALERÍA DE VISTAS PREVIAS
     function renderImageGallery() {
       const gallery = document.getElementById('imagesPreviewGallery');
       const placeholder = document.getElementById('uploadPlaceholder');
@@ -640,7 +609,6 @@
       updateSummary();
     }
 
-    // VALIDACIÓN ESTRICTA (TODOS LOS CAMPOS OBLIGATORIOS)
     function validateForm() {
       const pan = document.getElementById('selectPan').value;
       const relleno = document.getElementById('selectRelleno').value;
@@ -667,8 +635,8 @@
       }
     }
 
-    // MANDAR A COTIZAR
-    function submitQuoteRequest() {
+    // MANDAR A COTIZAR (GUARDA EN SUPABASE)
+    async function submitQuoteRequest() {
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
@@ -677,7 +645,7 @@
       const porcionesIndex = parseInt(document.getElementById('inputPorciones').value);
       const porciones = PORCIONES_LISTA[porcionesIndex] || 20;
 
-      const pisos = document.querySelector('input[name="pisos"]:checked').value;
+      const pisos = parseInt(document.querySelector('input[name="pisos"]:checked').value);
       const pan = document.getElementById('selectPan').value;
       const relleno = document.getElementById('selectRelleno').value;
       const estilo = document.querySelector('input[name="estilo"]:checked').value;
@@ -687,24 +655,30 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
 
-      const nuevaCotizacion = {
-        folio: currentFolio,
-        fecha: fecha,
-        cliente: nombre,
-        telefono: tel,
-        porciones: porciones,
-        pisos: pisos,
-        pan: pan,
-        relleno: relleno,
-        estilo: estilo,
-        extras: extras,
-        notas: notas,
-        fotos: [...uploadedImagesList],
-        precioFinal: null,
-        estado: "pendiente_produccion"
-      };
+      // INSERTAR EN LA BASE DE DATOS SUPABASE
+      const { data, error } = await _supabase
+        .from('cotizaciones')
+        .insert([{
+          folio: currentFolio,
+          fecha_evento: fecha,
+          cliente_nombre: nombre,
+          cliente_telefono: tel,
+          porciones: porciones,
+          pisos: pisos,
+          sabor_pan: pan,
+          relleno: relleno,
+          estilo: estilo,
+          extras: extras,
+          notas: notas,
+          fotos: uploadedImagesList,
+          estado: 'pendiente_produccion'
+        }]);
 
-      cotizacionesDB.push(nuevaCotizacion);
+      if (error) {
+        console.error("Error en Supabase:", error);
+        alert("Ocurrió un detalle al guardar en la nube. Revisa tus llaves de Supabase.");
+        return;
+      }
 
       let msg = `🎂 *NUEVA SOLICITUD DE COTIZACIÓN ${currentFolio}*\n`;
       msg += `----------------------------------------\n`;
@@ -733,7 +707,7 @@
       `;
       container.classList.remove('hidden');
 
-      alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar los datos a WhatsApp. Al hacerlo, el cotizador se limpiará automáticamente.`);
+      alert(`✅ ¡Solicitud ${currentFolio} guardada en Supabase!\n\nHaz clic en el botón verde para enviar los datos a WhatsApp.`);
     }
 
     function handleWhatsAppClick() {
@@ -747,7 +721,7 @@
       uploadedImagesList = [];
       renderImageGallery();
 
-      document.getElementById('inputPorciones').value = 3; // Por defecto 20 pers
+      document.getElementById('inputPorciones').value = 3;
 
       const container = document.getElementById('directWaContainer');
       if (container) {
@@ -763,7 +737,7 @@
       updateSummary();
     }
 
-    // PANEL STAFF
+    // PANEL STAFF (SUPABASE READ/UPDATE)
     function switchStaffTab(tab) {
       const tabProd = document.getElementById('tabProduccion');
       const tabVent = document.getElementById('tabVentas');
@@ -784,155 +758,172 @@
       renderStaffPanels();
     }
 
-    function renderStaffPanels() {
-      // Producción
+    async function renderStaffPanels() {
+      // CONSULTAR DESDE SUPABASE
+      const { data: cotizaciones, error } = await _supabase
+        .from('cotizaciones')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error al consultar Supabase:", error);
+        return;
+      }
+
+      // 1. Producción
       const containerProd = document.getElementById('cardsProduccionContainer');
       containerProd.innerHTML = "";
-      const pendientesProd = cotizacionesDB.filter(c => c.estado === 'pendiente_produccion');
+      const pendientesProd = cotizaciones.filter(c => c.estado === 'pendiente_produccion');
       document.getElementById('countProduccionPending').innerText = `${pendientesProd.length} pendientes`;
 
       if (pendientesProd.length === 0) {
         containerProd.innerHTML = `<div class="bg-white p-8 rounded-2xl border text-center text-gray-400 font-medium">✨ No hay solicitudes pendientes de revisión por Producción.</div>`;
       } else {
-        cotizacionesDB.forEach((item, index) => {
-          if (item.estado === 'pendiente_produccion') {
-            const card = document.createElement('div');
-            card.className = "bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-5 items-center";
+        pendientesProd.forEach((item) => {
+          const card = document.createElement('div');
+          card.className = "bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-5 items-center";
 
-            // Render imágenes
-            let fotosHtml = "";
-            if (item.fotos && item.fotos.length > 0) {
-              fotosHtml = `<div class="grid grid-cols-${Math.min(item.fotos.length, 3)} gap-1.5">`;
-              item.fotos.forEach(f => {
-                fotosHtml += `<img src="${f}" onclick="openImageZoom('${f}')" class="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">`;
-              });
-              fotosHtml += `</div><p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`;
-            } else {
-              fotosHtml = `<div class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Fotos</div>`;
-            }
-
-            card.innerHTML = `
-              <div class="md:col-span-4 text-center">
-                ${fotosHtml}
-              </div>
-
-              <div class="md:col-span-4 space-y-2 text-xs">
-                <div class="flex justify-between items-center">
-                  <span class="font-mono font-bold text-brand-900 text-sm">${item.folio}</span>
-                  <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-bold text-[10px]">📅 ${item.fecha}</span>
-                </div>
-                <p class="text-sm font-bold text-gray-800">${item.cliente} <span class="font-normal text-gray-500">(${item.telefono})</span></p>
-                
-                <div class="bg-cream-50 p-2.5 rounded-lg border border-brand-100 space-y-1 text-[11px]">
-                  <p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
-                  <p><b>Sabor / Relleno:</b> ${item.pan} / ${item.relleno}</p>
-                  <p><b>Estilo:</b> ${item.estilo}</p>
-                  ${item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
-                  ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
-                </div>
-              </div>
-
-              <div class="md:col-span-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
-                <label class="block text-xs font-bold text-amber-900">Ingresar Precio Técnico ($ MXN):</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
-                  <input type="number" id="prodPrice_${index}" placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-sm font-bold border border-amber-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <button onclick="saveProductionPrice(${index})" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2 rounded-lg text-xs transition shadow">
-                  <i class="fas fa-check mr-1"></i> Guardar Cotización
-                </button>
-              </div>
-            `;
-            containerProd.appendChild(card);
+          let fotosHtml = "";
+          if (item.fotos && item.fotos.length > 0) {
+            fotosHtml = `<div class="grid grid-cols-${Math.min(item.fotos.length, 3)} gap-1.5">`;
+            item.fotos.forEach(f => {
+              fotosHtml += `<img src="${f}" onclick="openImageZoom('${f}')" class="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">`;
+            });
+            fotosHtml += `</div><p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`;
+          } else {
+            fotosHtml = `<div class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Fotos</div>`;
           }
+
+          card.innerHTML = `
+            <div class="md:col-span-4 text-center">${fotosHtml}</div>
+            <div class="md:col-span-4 space-y-2 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="font-mono font-bold text-brand-900 text-sm">${item.folio}</span>
+                <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-bold text-[10px]">📅 ${item.fecha_evento}</span>
+              </div>
+              <p class="text-sm font-bold text-gray-800">${item.cliente_nombre} <span class="font-normal text-gray-500">(${item.cliente_telefono})</span></p>
+              
+              <div class="bg-cream-50 p-2.5 rounded-lg border border-brand-100 space-y-1 text-[11px]">
+                <p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
+                <p><b>Sabor / Relleno:</b> ${item.sabor_pan} / ${item.relleno}</p>
+                <p><b>Estilo:</b> ${item.estilo}</p>
+                ${item.extras && item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
+                ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
+              </div>
+            </div>
+
+            <div class="md:col-span-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
+              <label class="block text-xs font-bold text-amber-900">Ingresar Precio Técnico ($ MXN):</label>
+              <div class="relative">
+                <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
+                <input type="number" id="prodPrice_${item.id}" placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-sm font-bold border border-amber-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <button onclick="saveProductionPrice('${item.id}', '${item.folio}')" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2 rounded-lg text-xs transition shadow">
+                <i class="fas fa-check mr-1"></i> Guardar Cotización
+              </button>
+            </div>
+          `;
+          containerProd.appendChild(card);
         });
       }
 
-      // Ventas
+      // 2. Ventas (Pendientes)
       const tbodyVentPending = document.getElementById('tableVentasPending');
       tbodyVentPending.innerHTML = "";
-      const pendientesVent = cotizacionesDB.filter(c => c.estado === 'cotizado_listo');
+      const pendientesVent = cotizaciones.filter(c => c.estado === 'cotizado_listo');
       document.getElementById('badgeVentasPending').innerText = `${pendientesVent.length} ALERTAS`;
 
       if (pendientesVent.length === 0) {
         tbodyVentPending.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No hay cotizaciones pendientes por notificar.</td></tr>`;
       } else {
-        cotizacionesDB.forEach((item, index) => {
-          if (item.estado === 'cotizado_listo') {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-rose-50/40 transition";
+        pendientesVent.forEach((item) => {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-rose-50/40 transition";
 
-            let msgCliente = `✨ *¡HOLA ${item.cliente.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
-            msgCliente += `Hemos evaluado el diseño de tu pastel personalizado (*Folio ${item.folio}*):\n`;
-            msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
-            msgCliente += `• *Sabor/Relleno:* ${item.pan} / ${item.relleno}\n`;
-            msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
-            msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precioFinal} MXN*\n\n`;
-            msgCliente += `Para agendar tu fecha (*${item.fecha}*), requerimos un anticipo del 50%.\n`;
-            msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
+          let msgCliente = `✨ *¡HOLA ${item.cliente_nombre.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
+          msgCliente += `Hemos evaluado el diseño de tu pastel personalizado (*Folio ${item.folio}*):\n`;
+          msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
+          msgCliente += `• *Sabor/Relleno:* ${item.sabor_pan} / ${item.relleno}\n`;
+          msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
+          msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precio_final} MXN*\n\n`;
+          msgCliente += `Para agendar tu fecha (*${item.fecha_evento}*), requerimos un anticipo del 50%.\n`;
+          msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
 
-            const waLink = `https://wa.me/52${item.telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
+          const waLink = `https://wa.me/52${item.cliente_telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
 
-            tr.innerHTML = `
-              <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
-              <td class="p-3 font-semibold">${item.cliente}<br><span class="text-[10px] text-gray-500 font-normal">${item.telefono}</span></td>
-              <td class="p-3 text-[11px]">${item.porciones} pers. - ${item.pan}</td>
-              <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precioFinal} MXN</td>
-              <td class="p-3 text-right">
-                <a href="${waLink}" target="_blank" onclick="markAsNotified(${index})" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
-                  <i class="fab fa-whatsapp text-sm"></i>
-                  <span>Notificar al Cliente</span>
-                </a>
-              </td>
-            `;
-            tbodyVentPending.appendChild(tr);
-          }
+          tr.innerHTML = `
+            <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
+            <td class="p-3 font-semibold">${item.cliente_nombre}<br><span class="text-[10px] text-gray-500 font-normal">${item.cliente_telefono}</span></td>
+            <td class="p-3 text-[11px]">${item.porciones} pers. - ${item.sabor_pan}</td>
+            <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precio_final} MXN</td>
+            <td class="p-3 text-right">
+              <a href="${waLink}" target="_blank" onclick="markAsNotified('${item.id}')" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
+                <i class="fab fa-whatsapp text-sm"></i>
+                <span>Notificar al Cliente</span>
+              </a>
+            </td>
+          `;
+          tbodyVentPending.appendChild(tr);
         });
       }
 
+      // 3. Ventas (Notificadas)
       const tbodyVentDone = document.getElementById('tableVentasDone');
       tbodyVentDone.innerHTML = "";
-      const notificadasVent = cotizacionesDB.filter(c => c.estado === 'notificado_cliente');
+      const notificadasVent = cotizaciones.filter(c => c.estado === 'notificado_cliente');
       document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
 
       if (notificadasVent.length === 0) {
         tbodyVentDone.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Aún no hay cotizaciones notificadas registradas.</td></tr>`;
       } else {
-        cotizacionesDB.forEach((item) => {
-          if (item.estado === 'notificado_cliente') {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-emerald-50/30 transition";
-            tr.innerHTML = `
-              <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
-              <td class="p-3 font-semibold">${item.cliente}</td>
-              <td class="p-3 font-bold text-emerald-700">$${item.precioFinal} MXN</td>
-              <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
-            `;
-            tbodyVentDone.appendChild(tr);
-          }
+        notificadasVent.forEach((item) => {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-emerald-50/30 transition";
+          tr.innerHTML = `
+            <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
+            <td class="p-3 font-semibold">${item.cliente_nombre}</td>
+            <td class="p-3 font-bold text-emerald-700">$${item.precio_final} MXN</td>
+            <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
+          `;
+          tbodyVentDone.appendChild(tr);
         });
       }
     }
 
-    function saveProductionPrice(index) {
-      const priceVal = document.getElementById(`prodPrice_${index}`).value;
+    async function saveProductionPrice(id, folio) {
+      const priceVal = document.getElementById(`prodPrice_${id}`).value;
       if (!priceVal || priceVal <= 0) {
         alert("Por favor ingresa un precio válido asignado por producción.");
         return;
       }
 
-      cotizacionesDB[index].precioFinal = priceVal;
-      cotizacionesDB[index].estado = "cotizado_listo";
+      const { error } = await _supabase
+        .from('cotizaciones')
+        .update({
+          precio_final: parseFloat(priceVal),
+          estado: 'cotizado_listo'
+        })
+        .eq('id', id);
 
-      alert(`✅ Cotización ${cotizacionesDB[index].folio} guardada ($${priceVal} MXN). Pasó a la pestaña de 'Ventas' para ser notificada.`);
+      if (error) {
+        console.error("Error al actualizar precio:", error);
+        alert("Ocurrió un detalle al guardar en Supabase.");
+        return;
+      }
+
+      alert(`✅ Cotización ${folio} guardada ($${priceVal} MXN). Pasó a la pestaña de 'Ventas'.`);
       renderStaffPanels();
     }
 
-    function markAsNotified(index) {
-      setTimeout(() => {
-        cotizacionesDB[index].estado = "notificado_cliente";
-        renderStaffPanels();
-      }, 1000);
+    async function markAsNotified(id) {
+      const { error } = await _supabase
+        .from('cotizaciones')
+        .update({ estado: 'notificado_cliente' })
+        .eq('id', id);
+
+      if (!error) {
+        setTimeout(() => { renderStaffPanels(); }, 1000);
+      }
     }
 
     function openImageZoom(src) {
