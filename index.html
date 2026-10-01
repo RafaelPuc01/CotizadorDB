@@ -16,7 +16,7 @@
   <script>
     // CREDENCIALES DE SUPABASE
     const SUPABASE_URL = "https://gxlpghbsqxvhbvgsqdnc.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4bHBnaGJzcXh2aGJ2Z3NxZG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjQzNDYsImV4cCI6MjEwNjQwMDM0Nn0.zWANafZaswbBk6gQSvHq52nEM5t4UTFvV3ewZBb-qMs"; // Pega aquí tu Anon Key pública
+    const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY"; // Pega aquí tu Anon Key pública
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     tailwind.config = {
@@ -96,7 +96,7 @@
     <div id="viewCustomer" class="block">
       <div class="mb-8 text-center max-w-2xl mx-auto">
         <span class="text-brand-600 text-xs font-extrabold uppercase tracking-widest bg-brand-100 px-3 py-1 rounded-full">Solicitud de Cotización</span>
-        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-900 mt-2">Cotiza tu Pastel Personalizado</h2>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-900 mt-2">Cotiza tu Pastel o Postre</h2>
         <p class="text-gray-600 text-sm mt-2">Completa <b>todos los campos obligatorios (*)</b> para enviar tu solicitud al equipo de Producción y Tienda.</p>
       </div>
 
@@ -104,84 +104,137 @@
         <!-- FORMULARIO CLIENTE (COL 8) -->
         <div class="lg:col-span-8 space-y-6">
 
-          <!-- PASO 1: TAMAÑO Y PORCIONES -->
-          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
-            <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
-              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">1</span>
-              <h3 class="font-serif font-bold text-lg text-brand-900">Tamaño y Estructura *</h3>
+          <!-- PASO 0: SELECCIÓN DE TIPO DE PRODUCTO -->
+          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-4">
+            <label class="block text-sm font-semibold text-gray-700">¿Qué te gustaría cotizar hoy? *</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="cursor-pointer">
+                <input type="radio" name="tipoProducto" value="pastel" checked onclick="toggleTipoProducto('pastel')" class="peer hidden">
+                <div class="border-2 border-gray-200 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3.5 rounded-xl text-center transition">
+                  <span class="text-2xl">🎂</span>
+                  <p class="font-bold text-sm text-brand-900 mt-1">Pastel Personalizado</p>
+                </div>
+              </label>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="tipoProducto" value="postre" onclick="toggleTipoProducto('postre')" class="peer hidden">
+                <div class="border-2 border-gray-200 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3.5 rounded-xl text-center transition">
+                  <span class="text-2xl">🧁</span>
+                  <p class="font-bold text-sm text-brand-900 mt-1">Otros Postres</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- BLOQUE OPCIÓN A: PASTEL PERSONALIZADO -->
+          <div id="bloquePastelEstructura" class="space-y-6">
+            <!-- PASO 1: TAMAÑO Y PORCIONES -->
+            <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+              <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+                <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">1</span>
+                <h3 class="font-serif font-bold text-lg text-brand-900">Tamaño y Estructura del Pastel *</h3>
+              </div>
+
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-sm font-semibold text-gray-700">Número de porciones:</label>
+                  <span class="text-brand-700 font-bold text-lg bg-brand-50 px-3 py-1 rounded-lg border border-brand-100">
+                    <span id="labelPorciones">20</span> personas
+                  </span>
+                </div>
+                <input type="range" id="inputPorciones" min="0" max="14" step="1" value="3" oninput="updateSummary()"
+                  class="w-full h-2 bg-brand-100 rounded-lg appearance-none cursor-pointer accent-brand-600">
+                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>4 pers. (Min)</span>
+                  <span>35 pers.</span>
+                  <span>150 pers. (Max)</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Estructura del pastel:</label>
+                <div class="grid grid-cols-3 gap-3">
+                  <label class="cursor-pointer">
+                    <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
+                    <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
+                      <p class="font-bold text-sm text-brand-900">1 Piso</p>
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
+                    <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
+                      <p class="font-bold text-sm text-brand-900">2 Pisos</p>
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
+                    <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
+                      <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-sm font-semibold text-gray-700">Número de porciones:</label>
-                <span class="text-brand-700 font-bold text-lg bg-brand-50 px-3 py-1 rounded-lg border border-brand-100">
-                  <span id="labelPorciones">20</span> personas
-                </span>
+            <!-- PASO 2: SABORES Y RELLENOS -->
+            <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+              <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+                <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">2</span>
+                <h3 class="font-serif font-bold text-lg text-brand-900">Sabores y Rellenos *</h3>
               </div>
-              <input type="range" id="inputPorciones" min="0" max="14" step="1" value="3" oninput="updateSummary()"
-                class="w-full h-2 bg-brand-100 rounded-lg appearance-none cursor-pointer accent-brand-600">
-              <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>4 pers. (Min)</span>
-                <span>35 pers.</span>
-                <span>150 pers. (Max)</span>
-              </div>
-            </div>
 
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Estructura del pastel:</label>
-              <div class="grid grid-cols-3 gap-3">
-                <label class="cursor-pointer">
-                  <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
-                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
-                    <p class="font-bold text-sm text-brand-900">1 Piso</p>
-                  </div>
-                </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
-                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
-                    <p class="font-bold text-sm text-brand-900">2 Pisos</p>
-                  </div>
-                </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
-                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
-                    <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
-                  </div>
-                </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Sabor de Pan (Bizcocho) *</label>
+                  <select id="selectPan" onchange="updateSummary()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <option value="">-- Selecciona un sabor --</option>
+                    <option value="Vainilla Tradicional">Vainilla Tradicional</option>
+                    <option value="Chocolate Intenso">Chocolate Intenso</option>
+                    <option value="Red Velvet">Red Velvet</option>
+                    <option value="Zanahoria & Especias">Zanahoria & Especias</option>
+                    <option value="Marmolado">Marmolado (Vainilla/Choc)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Relleno Principal *</label>
+                  <select id="selectRelleno" onchange="updateSummary()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <option value="">-- Selecciona un relleno --</option>
+                    <option value="Cajeta con Nuez">Cajeta horneada con Nuez</option>
+                    <option value="Crema de Nutella">Crema de Nutella</option>
+                    <option value="Frutos Rojos Silvestres">Frutos Rojos Silvestres</option>
+                    <option value="Queso Crema con Zarzamora">Queso Crema con Zarzamora</option>
+                    <option value="Durazno con Crema Pastelera">Durazno con Crema Pastelera</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- PASO 2: SABORES Y RELLENOS -->
-          <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
+          <!-- BLOQUE OPCIÓN B: OTROS POSTRES -->
+          <div id="bloquePostres" class="hidden bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-4">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
-              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">2</span>
-              <h3 class="font-serif font-bold text-lg text-brand-900">Sabores y Rellenos *</h3>
+              <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">1</span>
+              <h3 class="font-serif font-bold text-lg text-brand-900">Especificaciones del Postre *</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Sabor de Pan (Bizcocho) *</label>
-                <select id="selectPan" onchange="updateSummary()" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                  <option value="">-- Selecciona un sabor --</option>
-                  <option value="Vainilla Tradicional">Vainilla Tradicional</option>
-                  <option value="Chocolate Intenso">Chocolate Intenso</option>
-                  <option value="Red Velvet">Red Velvet</option>
-                  <option value="Zanahoria & Especias">Zanahoria & Especias</option>
-                  <option value="Marmolado">Marmolado (Vainilla/Choc)</option>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Variedad de Postre *</label>
+                <select id="selectVariedadPostre" onchange="updateSummary()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  <option value="">-- Selecciona una variedad --</option>
+                  <option value="Cheesecake">Cheesecake (Frutos Rojos / Oreo / Nutella)</option>
+                  <option value="Cupcakes Decorados">Cupcakes Decorados (Docena / Medialuna)</option>
+                  <option value="Galletas Temáticas">Galletas Temáticas Decoradas</option>
+                  <option value="Mojaditos">Mojaditos / Pastelitos Individuales</option>
+                  <option value="Brownies / Blondies">Brownies / Barritas Gourmet</option>
+                  <option value="Otro Postre">Otro Postre (Especificar en notas)</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Relleno Principal *</label>
-                <select id="selectRelleno" onchange="updateSummary()" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                  <option value="">-- Selecciona un relleno --</option>
-                  <option value="Cajeta con Nuez">Cajeta horneada con Nuez</option>
-                  <option value="Crema de Nutella">Crema de Nutella</option>
-                  <option value="Frutos Rojos Silvestres">Frutos Rojos Silvestres</option>
-                  <option value="Queso Crema con Zarzamora">Queso Crema con Zarzamora</option>
-                  <option value="Durazno con Crema Pastelera">Durazno con Crema Pastelera</option>
-                </select>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Cantidad / Piezas / Paquetes *</label>
+                <input type="text" id="inputCantidadPostre" placeholder="Ej. 24 cupcakes, 2 cheesecakes..." oninput="updateSummary()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
               </div>
             </div>
           </div>
@@ -290,7 +343,7 @@
 
             <div>
               <label class="block text-xs font-semibold text-gray-700 mb-1">Detalles o especificaciones adicionales:</label>
-              <textarea id="inputNotas" rows="2" placeholder="Colores requeridos, dedicatoria o letrero en el pastel..." class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+              <textarea id="inputNotas" rows="2" placeholder="Colores requeridos, dedicatoria o letrero..." class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
             </div>
           </div>
 
@@ -306,16 +359,24 @@
 
             <div class="space-y-2.5 text-xs">
               <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Producto:</span>
+                <span id="sumTipoProducto" class="font-bold text-brand-900">🎂 Pastel Personalizado</span>
+              </div>
+              <div id="rowSummaryPorciones" class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Porciones:</span>
                 <span id="sumPorciones" class="font-semibold text-gray-800">20 pers. (1 Piso)</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-gray-50">
+              <div id="rowSummaryPan" class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Sabor Bizcocho:</span>
                 <span id="sumPan" class="font-semibold text-gray-400 italic">Sin seleccionar</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-gray-50">
+              <div id="rowSummaryRelleno" class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Relleno:</span>
                 <span id="sumRelleno" class="font-semibold text-gray-400 italic">Sin seleccionar</span>
+              </div>
+              <div id="rowSummaryPostre" class="hidden flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Postre / Cantidad:</span>
+                <span id="sumPostre" class="font-semibold text-gray-800">Sin seleccionar</span>
               </div>
               <div class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Estilo:</span>
@@ -368,7 +429,7 @@
       <!-- SECCIÓN A: PANEL DE PRODUCCIÓN -->
       <div id="tabProduccion" class="space-y-4">
         <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center justify-between">
-          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos del pastel, visualiza las imágenes de referencia y asigna el precio exacto.</span>
+          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos, visualiza las imágenes de referencia y asigna el precio exacto.</span>
           <span class="font-bold bg-amber-200 px-2.5 py-1 rounded-full text-[11px]" id="countProduccionPending">0 pendientes</span>
         </div>
 
@@ -486,10 +547,10 @@
   </footer>
 
 
-  <!-- JAVASCRIPT CON PIN 201217 Y PERSISTENCIA DE SESIÓN -->
+  <!-- JAVASCRIPT INTEGRADO -->
   <script>
     const WHATSAPP_TIENDA = "522741352901"; 
-    const PIN_EQUIPO_DB = "201217"; // PIN oficial de 6 dígitos
+    const PIN_EQUIPO_DB = "201217"; 
     
     let isStaffLoggedIn = false;
     const PORCIONES_LISTA = [4, 8, 12, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 150];
@@ -500,13 +561,22 @@
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
     }
 
-    // INICIALIZACIÓN Y PERSISTENCIA DE SESIÓN
+    // FECHA LÍMITE (RESTA DÍAS A UNA FECHA Y FORMATEA)
+    function calcularFechaLimite(fechaEventoStr, diasResta = 4) {
+      if (!fechaEventoStr) return "N/A";
+      const partes = fechaEventoStr.split('-');
+      const fecha = new Date(partes[0], partes[1] - 1, partes[2]);
+      fecha.setDate(fecha.getDate() - diasResta);
+      const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+      return fecha.toLocaleDateString('es-MX', opciones);
+    }
+
     function initApp() {
       const folioEl = document.getElementById('summaryFolio');
       if (folioEl) {
         folioEl.innerText = currentFolio;
       }
-      checkStaffSession(); // Comprueba si el usuario ya inició sesión previamente
+      checkStaffSession();
       updateSummary();
     }
 
@@ -516,7 +586,6 @@
       initApp();
     }
 
-    // VERIFICAR Y MANTENER SESIÓN ACTIVA EN LOCALSTORAGE
     function checkStaffSession() {
       const activeSession = localStorage.getItem('db_staff_active');
       if (activeSession === 'true') {
@@ -534,7 +603,7 @@
       const pass = document.getElementById('inputPass').value;
       if (pass === PIN_EQUIPO_DB) {
         isStaffLoggedIn = true;
-        localStorage.setItem('db_staff_active', 'true'); // Guardar sesión
+        localStorage.setItem('db_staff_active', 'true');
         closeLoginModal();
         document.getElementById('inputPass').value = "";
         document.getElementById('staffIndicator').classList.remove('hidden');
@@ -543,40 +612,78 @@
         document.getElementById('viewStaff').classList.remove('hidden');
         renderStaffPanels();
       } else {
-        alert("⚠️ PIN incorrecto. Verifica el código de 6 dígitos de Dulce Bocado.");
+        alert("⚠️ PIN incorrecto. Verifica el código de 6 dígitos.");
       }
     }
 
     function logoutStaff() {
       isStaffLoggedIn = false;
-      localStorage.removeItem('db_staff_active'); // Borrar sesión
+      localStorage.removeItem('db_staff_active');
       document.getElementById('staffIndicator').classList.add('hidden');
       document.getElementById('btnStaffAccessHeader').classList.remove('hidden');
       document.getElementById('viewStaff').classList.add('hidden');
       document.getElementById('viewCustomer').classList.remove('hidden');
     }
 
+    // CAMBIO DE TIPO DE PRODUCTO (PASTEL vs OTROS POSTRES)
+    function toggleTipoProducto(tipo) {
+      const bloquePastel = document.getElementById('bloquePastelEstructura');
+      const bloquePostres = document.getElementById('bloquePostres');
+      
+      const rowPorciones = document.getElementById('rowSummaryPorciones');
+      const rowPan = document.getElementById('rowSummaryPan');
+      const rowRelleno = document.getElementById('rowSummaryRelleno');
+      const rowPostre = document.getElementById('rowSummaryPostre');
+      const sumTipo = document.getElementById('sumTipoProducto');
+
+      if (tipo === 'postre') {
+        if (bloquePastel) bloquePastel.classList.add('hidden');
+        if (bloquePostres) bloquePostres.classList.remove('hidden');
+        
+        if (rowPorciones) rowPorciones.classList.add('hidden');
+        if (rowPan) rowPan.classList.add('hidden');
+        if (rowRelleno) rowRelleno.classList.add('hidden');
+        if (rowPostre) rowPostre.classList.remove('hidden');
+        if (sumTipo) sumTipo.innerText = "🧁 Otros Postres";
+      } else {
+        if (bloquePastel) bloquePastel.classList.remove('hidden');
+        if (bloquePostres) bloquePostres.classList.add('hidden');
+
+        if (rowPorciones) rowPorciones.classList.remove('hidden');
+        if (rowPan) rowPan.classList.remove('hidden');
+        if (rowRelleno) rowRelleno.classList.remove('hidden');
+        if (rowPostre) rowPostre.classList.add('hidden');
+        if (sumTipo) sumTipo.innerText = "🎂 Pastel Personalizado";
+      }
+      updateSummary();
+    }
+
     function updateSummary() {
-      const porcionesIndex = document.getElementById('inputPorciones') ? parseInt(document.getElementById('inputPorciones').value) : 3;
-      const porcionesValor = PORCIONES_LISTA[porcionesIndex] || 20;
+      const tipoProducto = document.querySelector('input[name="tipoProducto"]:checked') ? document.querySelector('input[name="tipoProducto"]:checked').value : 'pastel';
 
-      const pisosRadio = document.querySelector('input[name="pisos"]:checked');
-      const pisos = pisosRadio ? pisosRadio.value : "1";
+      if (tipoProducto === 'pastel') {
+        const porcionesIndex = document.getElementById('inputPorciones') ? parseInt(document.getElementById('inputPorciones').value) : 3;
+        const porcionesValor = PORCIONES_LISTA[porcionesIndex] || 20;
+        const pisosRadio = document.querySelector('input[name="pisos"]:checked');
+        const pisos = pisosRadio ? pisosRadio.value : "1";
+        const pan = document.getElementById('selectPan') ? document.getElementById('selectPan').value : "";
+        const relleno = document.getElementById('selectRelleno') ? document.getElementById('selectRelleno').value : "";
 
-      const panEl = document.getElementById('selectPan');
-      const pan = panEl ? panEl.value : "";
-
-      const rellenoEl = document.getElementById('selectRelleno');
-      const relleno = rellenoEl ? rellenoEl.value : "";
+        document.getElementById('labelPorciones').innerText = porcionesValor;
+        document.getElementById('sumPorciones').innerText = `${porcionesValor} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
+        document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+        document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+      } else {
+        const variedad = document.getElementById('selectVariedadPostre') ? document.getElementById('selectVariedadPostre').value : "";
+        const cantidad = document.getElementById('inputCantidadPostre') ? document.getElementById('inputCantidadPostre').value.trim() : "";
+        
+        document.getElementById('sumPostre').innerHTML = (variedad && cantidad)
+          ? `<span class="text-gray-800 font-semibold">${variedad} (${cantidad})</span>`
+          : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+      }
 
       const estiloRadio = document.querySelector('input[name="estilo"]:checked');
       const estilo = estiloRadio ? estiloRadio.value : "Sencillo / Clásico";
-
-      document.getElementById('labelPorciones').innerText = porcionesValor;
-      document.getElementById('sumPorciones').innerText = `${porcionesValor} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
-      
-      document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
-      document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
       document.getElementById('sumEstilo').innerText = estilo;
       
       const numFotos = uploadedImagesList.length;
@@ -592,7 +699,6 @@
       if (!files || files.length === 0) return;
 
       const espacioDisponible = 3 - uploadedImagesList.length;
-
       if (espacioDisponible <= 0) {
         alert("Ya has alcanzado el límite máximo de 3 fotos de referencia.");
         event.target.value = "";
@@ -600,7 +706,6 @@
       }
 
       const filesToProcess = files.slice(0, espacioDisponible);
-
       let processedCount = 0;
       filesToProcess.forEach(file => {
         const reader = new FileReader();
@@ -661,14 +766,24 @@
     }
 
     function validateForm() {
-      const pan = document.getElementById('selectPan').value;
-      const relleno = document.getElementById('selectRelleno').value;
+      const tipoProducto = document.querySelector('input[name="tipoProducto"]:checked') ? document.querySelector('input[name="tipoProducto"]:checked').value : 'pastel';
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
       const tieneFotos = uploadedImagesList.length > 0;
 
-      const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFotos;
+      let validProd = false;
+      if (tipoProducto === 'pastel') {
+        const pan = document.getElementById('selectPan').value;
+        const relleno = document.getElementById('selectRelleno').value;
+        validProd = pan !== "" && relleno !== "";
+      } else {
+        const variedad = document.getElementById('selectVariedadPostre').value;
+        const cantidad = document.getElementById('inputCantidadPostre').value.trim();
+        validProd = variedad !== "" && cantidad !== "";
+      }
+
+      const isValid = validProd && nombre !== "" && tel !== "" && fecha !== "" && tieneFotos;
 
       const btn = document.getElementById('btnMandarCotizar');
       const warning = document.getElementById('validationWarning');
@@ -686,19 +801,28 @@
       }
     }
 
-    // MANDAR A COTIZAR (GUARDA EN SUPABASE)
+    // MANDAR A COTIZAR (SUPABASE)
     async function submitQuoteRequest() {
+      const tipoProducto = document.querySelector('input[name="tipoProducto"]:checked').value;
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
       const notas = document.getElementById('inputNotas').value.trim();
       
-      const porcionesIndex = parseInt(document.getElementById('inputPorciones').value);
-      const porciones = PORCIONES_LISTA[porcionesIndex] || 20;
+      let porciones = 0, pisos = 0, pan = 'N/A', relleno = 'N/A';
+      let variedadPostre = null, cantidadPiezas = null;
 
-      const pisos = parseInt(document.querySelector('input[name="pisos"]:checked').value);
-      const pan = document.getElementById('selectPan').value;
-      const relleno = document.getElementById('selectRelleno').value;
+      if (tipoProducto === 'pastel') {
+        const porcionesIndex = parseInt(document.getElementById('inputPorciones').value);
+        porciones = PORCIONES_LISTA[porcionesIndex] || 20;
+        pisos = parseInt(document.querySelector('input[name="pisos"]:checked').value);
+        pan = document.getElementById('selectPan').value;
+        relleno = document.getElementById('selectRelleno').value;
+      } else {
+        variedadPostre = document.getElementById('selectVariedadPostre').value;
+        cantidadPiezas = document.getElementById('inputCantidadPostre').value.trim();
+      }
+
       const estilo = document.querySelector('input[name="estilo"]:checked').value;
 
       let extras = [];
@@ -706,11 +830,14 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
 
-      // INSERTAR EN LA BASE DE DATOS SUPABASE
+      // INSERTAR EN SUPABASE
       const { data, error } = await _supabase
         .from('cotizaciones')
         .insert([{
           folio: currentFolio,
+          tipo_producto: tipoProducto,
+          variedad_postre: variedadPostre,
+          cantidad_piezas: cantidadPiezas,
           fecha_evento: fecha,
           cliente_nombre: nombre,
           cliente_telefono: tel,
@@ -737,9 +864,17 @@
       msg += `📱 *Teléfono:* ${tel}\n`;
       msg += `📅 *Fecha Evento:* ${fecha}\n\n`;
       msg += `🍰 *ESPECIFICACIONES:*\n`;
-      msg += `• *Porciones:* ${porciones} personas (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
-      msg += `• *Bizcocho:* ${pan}\n`;
-      msg += `• *Relleno:* ${relleno}\n`;
+      msg += `• *Producto:* ${tipoProducto === 'pastel' ? 'Pastel Personalizado' : 'Otros Postres'}\n`;
+      
+      if (tipoProducto === 'pastel') {
+        msg += `• *Porciones:* ${porciones} personas (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
+        msg += `• *Bizcocho:* ${pan}\n`;
+        msg += `• *Relleno:* ${relleno}\n`;
+      } else {
+        msg += `• *Variedad:* ${variedadPostre}\n`;
+        msg += `• *Cantidad:* ${cantidadPiezas}\n`;
+      }
+
       msg += `• *Estilo:* ${estilo}\n`;
       msg += `• *Fotos adjuntas:* ${uploadedImagesList.length} imagen(es)\n`;
       msg += `• *Extras:* ${extras.length > 0 ? extras.join(', ') : 'Ninguno'}\n`;
@@ -773,6 +908,7 @@
       renderImageGallery();
 
       document.getElementById('inputPorciones').value = 3;
+      toggleTipoProducto('pastel');
 
       const container = document.getElementById('directWaContainer');
       if (container) {
@@ -844,6 +980,14 @@
             fotosHtml = `<div class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Fotos</div>`;
           }
 
+          let detalleProd = "";
+          if (item.tipo_producto === 'postre') {
+            detalleProd = `<p class="text-purple-800 font-bold">🧁 POSTRE: ${item.variedad_postre} (${item.cantidad_piezas})</p>`;
+          } else {
+            detalleProd = `<p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
+                           <p><b>Sabor / Relleno:</b> ${item.sabor_pan} / ${item.relleno}</p>`;
+          }
+
           card.innerHTML = `
             <div class="md:col-span-4 text-center">${fotosHtml}</div>
             <div class="md:col-span-4 space-y-2 text-xs">
@@ -854,8 +998,7 @@
               <p class="text-sm font-bold text-gray-800">${item.cliente_nombre} <span class="font-normal text-gray-500">(${item.cliente_telefono})</span></p>
               
               <div class="bg-cream-50 p-2.5 rounded-lg border border-brand-100 space-y-1 text-[11px]">
-                <p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
-                <p><b>Sabor / Relleno:</b> ${item.sabor_pan} / ${item.relleno}</p>
+                ${detalleProd}
                 <p><b>Estilo:</b> ${item.estilo}</p>
                 ${item.extras && item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
                 ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
@@ -890,21 +1033,35 @@
           const tr = document.createElement('tr');
           tr.className = "hover:bg-rose-50/40 transition";
 
+          const fechaLimiteStr = calcularFechaLimite(item.fecha_evento, 4);
+
           let msgCliente = `✨ *¡HOLA ${item.cliente_nombre.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
-          msgCliente += `Hemos evaluado el diseño de tu pastel personalizado (*Folio ${item.folio}*):\n`;
-          msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
-          msgCliente += `• *Sabor/Relleno:* ${item.sabor_pan} / ${item.relleno}\n`;
+          msgCliente += `Hemos evaluado el diseño de tu pedido (*Folio ${item.folio}*):\n`;
+          
+          if (item.tipo_producto === 'postre') {
+            msgCliente += `• *Postre:* ${item.variedad_postre} (${item.cantidad_piezas})\n`;
+          } else {
+            msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
+            msgCliente += `• *Sabor/Relleno:* ${item.sabor_pan} / ${item.relleno}\n`;
+          }
+
           msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
           msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precio_final} MXN*\n\n`;
-          msgCliente += `Para agendar tu fecha (*${item.fecha_evento}*), requerimos un anticipo del 50%.\n`;
+          msgCliente += `----------------------------------------\n`;
+          msgCliente += `📅 *FECHA DE TU EVENTO:* ${item.fecha_evento}\n`;
+          msgCliente += `⚠️ *FECHA LÍMITE DE CONFIRMACIÓN:* ${fechaLimiteStr} (Sujeto a disponibilidad en agenda)\n`;
+          msgCliente += `----------------------------------------\n\n`;
+          msgCliente += `Para reservar tu fecha requerimos un anticipo del 50%.\n`;
           msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
 
           const waLink = `https://wa.me/52${item.cliente_telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
 
+          let descShort = item.tipo_producto === 'postre' ? `${item.variedad_postre}` : `${item.porciones} pers. - ${item.sabor_pan}`;
+
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
             <td class="p-3 font-semibold">${item.cliente_nombre}<br><span class="text-[10px] text-gray-500 font-normal">${item.cliente_telefono}</span></td>
-            <td class="p-3 text-[11px]">${item.porciones} pers. - ${item.sabor_pan}</td>
+            <td class="p-3 text-[11px]">${descShort}</td>
             <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precio_final} MXN</td>
             <td class="p-3 text-right">
               <a href="${waLink}" target="_blank" onclick="markAsNotified('${item.id}')" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
