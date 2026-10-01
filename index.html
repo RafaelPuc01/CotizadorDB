@@ -15,8 +15,8 @@
   
   <script>
     // CREDENCIALES DE SUPABASE
-    const SUPABASE_URL = "https://gxlpghbsqxvhbvgsqdnc.supabase.co"; // Cambia por tu URL de Supabase
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4bHBnaGJzcXh2aGJ2Z3NxZG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjQzNDYsImV4cCI6MjEwNjQwMDM0Nn0.zWANafZaswbBk6gQSvHq52nEM5t4UTFvV3ewZBb-qMs";        // Cambia por tu Anon Key
+    const SUPABASE_URL = "https://gxlpghbsqxvhbvgsqdnc.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4bHBnaGJzcXh2aGJ2Z3NxZG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjQzNDYsImV4cCI6MjEwNjQwMDM0Nn0.zWANafZaswbBk6gQSvHq52nEM5t4UTFvV3ewZBb-qMs"; // Pega aquí tu Anon Key pública
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     tailwind.config = {
@@ -54,7 +54,7 @@
 </head>
 <body class="bg-cream-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between custom-scrollbar">
 
-  <!-- HEADER -->
+  <!-- HEADER CON BOTÓN ACCESIBLE DE STAFF -->
   <header class="bg-white/80 backdrop-blur-md border-b border-brand-100 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
@@ -67,15 +67,23 @@
         </div>
       </div>
 
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2">
         <a href="https://wa.me/522741352901" target="_blank" class="hidden sm:flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition border border-emerald-200 font-medium">
           <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
           <span>Tienda: 274 135 2901</span>
         </a>
+
+        <!-- BOTÓN RÁPIDO DE ACCESO EQUIPO DB -->
+        <button id="btnStaffAccessHeader" onclick="openLoginModal()" class="flex items-center space-x-1.5 text-xs font-bold text-brand-800 bg-brand-100 hover:bg-brand-200 px-3 py-1.5 rounded-full transition shadow-sm border border-brand-200">
+          <i class="fas fa-key text-brand-600"></i>
+          <span>Acceso Equipo DB</span>
+        </button>
+
+        <!-- INDICADOR DE SESIÓN ACTIVA -->
         <div id="staffIndicator" class="hidden flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-xs font-medium text-amber-800">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span>Panel Interno Activo</span>
-          <button onclick="logoutStaff()" class="ml-1 text-amber-900 underline hover:text-red-600">Salir</button>
+          <button onclick="logoutStaff()" class="ml-1 text-amber-900 underline hover:text-red-600 font-bold">Salir</button>
         </div>
       </div>
     </div>
@@ -445,22 +453,21 @@
     </div>
   </div>
 
-  <!-- MODAL LOGIN -->
+  <!-- MODAL LOGIN CON PIN DE 6 DÍGITOS -->
   <div id="modalLogin" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-brand-100 relative">
       <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
 
       <div class="text-center space-y-2 mb-5">
-        <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fas fa-lock"></i></div>
-        <h3 class="font-serif font-bold text-xl text-brand-900">Acceso Producción / Ventas</h3>
-        <p class="text-xs text-gray-500">Ingresa la clave de acceso autorizada.</p>
+        <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fas fa-key"></i></div>
+        <h3 class="font-serif font-bold text-xl text-brand-900">Acceso Equipo DB</h3>
+        <p class="text-xs text-gray-500">Ingresa el PIN de 6 dígitos del equipo.</p>
       </div>
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">PIN de Acceso:</label>
-          <input type="password" id="inputPass" placeholder="Ej. 1234" required class="w-full border border-gray-300 rounded-xl p-2.5 text-center font-mono text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-          <p class="text-[10px] text-gray-400 mt-1 text-center">PIN por defecto: <b>1234</b></p>
+          <label class="block text-xs font-semibold text-gray-700 mb-1 text-center">PIN de Acceso (6 dígitos):</label>
+          <input type="password" id="inputPass" maxlength="6" placeholder="******" required class="w-full border border-gray-300 rounded-xl p-2.5 text-center font-mono text-lg tracking-widest focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
         <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 rounded-xl transition text-xs">Ingresar al Panel</button>
       </form>
@@ -479,9 +486,11 @@
   </footer>
 
 
-  <!-- JAVASCRIPT CON SUPABASE INTEGRADOR -->
+  <!-- JAVASCRIPT CON PIN 201217 Y PERSISTENCIA DE SESIÓN -->
   <script>
     const WHATSAPP_TIENDA = "522741352901"; 
+    const PIN_EQUIPO_DB = "201217"; // PIN oficial de 6 dígitos
+    
     let isStaffLoggedIn = false;
     const PORCIONES_LISTA = [4, 8, 12, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 150];
     let uploadedImagesList = [];
@@ -491,11 +500,13 @@
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
     }
 
+    // INICIALIZACIÓN Y PERSISTENCIA DE SESIÓN
     function initApp() {
       const folioEl = document.getElementById('summaryFolio');
       if (folioEl) {
         folioEl.innerText = currentFolio;
       }
+      checkStaffSession(); // Comprueba si el usuario ya inició sesión previamente
       updateSummary();
     }
 
@@ -503,6 +514,46 @@
       document.addEventListener('DOMContentLoaded', initApp);
     } else {
       initApp();
+    }
+
+    // VERIFICAR Y MANTENER SESIÓN ACTIVA EN LOCALSTORAGE
+    function checkStaffSession() {
+      const activeSession = localStorage.getItem('db_staff_active');
+      if (activeSession === 'true') {
+        isStaffLoggedIn = true;
+        document.getElementById('staffIndicator').classList.remove('hidden');
+        document.getElementById('btnStaffAccessHeader').classList.add('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewStaff').classList.remove('hidden');
+        renderStaffPanels();
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('inputPass').value;
+      if (pass === PIN_EQUIPO_DB) {
+        isStaffLoggedIn = true;
+        localStorage.setItem('db_staff_active', 'true'); // Guardar sesión
+        closeLoginModal();
+        document.getElementById('inputPass').value = "";
+        document.getElementById('staffIndicator').classList.remove('hidden');
+        document.getElementById('btnStaffAccessHeader').classList.add('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewStaff').classList.remove('hidden');
+        renderStaffPanels();
+      } else {
+        alert("⚠️ PIN incorrecto. Verifica el código de 6 dígitos de Dulce Bocado.");
+      }
+    }
+
+    function logoutStaff() {
+      isStaffLoggedIn = false;
+      localStorage.removeItem('db_staff_active'); // Borrar sesión
+      document.getElementById('staffIndicator').classList.add('hidden');
+      document.getElementById('btnStaffAccessHeader').classList.remove('hidden');
+      document.getElementById('viewStaff').classList.add('hidden');
+      document.getElementById('viewCustomer').classList.remove('hidden');
     }
 
     function updateSummary() {
@@ -759,7 +810,6 @@
     }
 
     async function renderStaffPanels() {
-      // CONSULTAR DESDE SUPABASE
       const { data: cotizaciones, error } = await _supabase
         .from('cotizaciones')
         .select('*')
@@ -937,28 +987,6 @@
 
     function openLoginModal() { document.getElementById('modalLogin').classList.remove('hidden'); }
     function closeLoginModal() { document.getElementById('modalLogin').classList.add('hidden'); }
-
-    function handleLogin(e) {
-      e.preventDefault();
-      const pass = document.getElementById('inputPass').value;
-      if (pass === "1234" || pass === "admin") {
-        isStaffLoggedIn = true;
-        closeLoginModal();
-        document.getElementById('staffIndicator').classList.remove('hidden');
-        document.getElementById('viewCustomer').classList.add('hidden');
-        document.getElementById('viewStaff').classList.remove('hidden');
-        renderStaffPanels();
-      } else {
-        alert("PIN incorrecto. Intenta con 1234");
-      }
-    }
-
-    function logoutStaff() {
-      isStaffLoggedIn = false;
-      document.getElementById('staffIndicator').classList.add('hidden');
-      document.getElementById('viewStaff').classList.add('hidden');
-      document.getElementById('viewCustomer').classList.remove('hidden');
-    }
   </script>
 </body>
 </html>
