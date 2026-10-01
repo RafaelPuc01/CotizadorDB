@@ -1,0 +1,392 @@
+<script>
+  const WHATSAPP_TIENDA = "522741352901"; // WhatsApp oficial Tienda Dulce Bocado
+  let isStaffLoggedIn = false;
+  let uploadedImageBase64 = null;
+  let currentFolio = generateFolio();
+
+  // Base de datos local
+  let cotizacionesDB = [
+    {
+      folio: "#DB-8492",
+      fecha: "2026-10-05",
+      cliente: "María López",
+      telefono: "2741234567",
+      porciones: 30,
+      pisos: 2,
+      pan: "Vainilla Tradicional",
+      relleno: "Frutos Rojos Silvestres",
+      estilo: "Temático / Personalizado",
+      extras: ["Cake Topper Personalizado"],
+      notas: "Temática de Minnie Mouse, letrero con 'Sofía 3 años'",
+      foto: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=400&auto=format&fit=crop&q=80",
+      precioFinal: null,
+      estado: "pendiente_produccion"
+    }
+  ];
+
+  function generateFolio() {
+    return '#DB-' + Math.floor(1000 + Math.random() * 9000);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('summaryFolio').innerText = currentFolio;
+    updateSummary();
+  });
+
+  // Actualiza Resumen en Lateral
+  function updateSummary() {
+    const porciones = document.getElementById('inputPorciones').value;
+    const pisos = document.querySelector('input[name="pisos"]:checked').value;
+    const pan = document.getElementById('selectPan').value;
+    const relleno = document.getElementById('selectRelleno').value;
+    const estilo = document.querySelector('input[name="estilo"]:checked').value;
+
+    document.getElementById('labelPorciones').innerText = porciones;
+    document.getElementById('sumPorciones').innerText = `${porciones} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
+    
+    document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+    document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+    document.getElementById('sumEstilo').innerText = estilo;
+    document.getElementById('sumFoto').innerHTML = uploadedImageBase64 ? `<span class="text-emerald-600 font-bold">✓ Adjuntada</span>` : `<span class="text-red-500 font-bold">❌ Pendiente</span>`;
+
+    validateForm();
+  }
+
+  // Carga de Imagen
+  function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedImageBase64 = e.target.result;
+        document.getElementById('uploadPlaceholder').classList.add('hidden');
+        document.getElementById('uploadPreview').classList.remove('hidden');
+        document.getElementById('imgPreviewSrc').src = e.target.result;
+        document.getElementById('imgPreviewName').innerText = file.name;
+        updateSummary();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // VALIDACIÓN ESTRICTA
+  function validateForm() {
+    const pan = document.getElementById('selectPan').value;
+    const relleno = document.getElementById('selectRelleno').value;
+    const nombre = document.getElementById('inputNombre').value.trim();
+    const tel = document.getElementById('inputTel').value.trim();
+    const fecha = document.getElementById('inputFecha').value;
+    const tieneFoto = uploadedImageBase64 !== null;
+
+    const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFoto;
+
+    const btn = document.getElementById('btnMandarCotizar');
+    const warning = document.getElementById('validationWarning');
+
+    if (isValid) {
+      btn.disabled = false;
+      btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm";
+      warning.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800 font-medium";
+      warning.innerHTML = `<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Todos los campos requeridos están listos!`;
+    } else {
+      btn.disabled = true;
+      btn.className = "w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm";
+      warning.className = "bg-amber-50 border border-amber-200 rounded-xl p-3 text-center text-xs text-amber-800";
+      warning.innerHTML = `<i class="fas fa-exclamation-circle text-amber-600 mr-1"></i> Falta completar campos requeridos (*)`;
+    }
+  }
+
+  // PASO 1: ENVIAR A LISTA DE PRODUCCIÓN
+  function submitQuoteRequest() {
+    const nombre = document.getElementById('inputNombre').value.trim();
+    const tel = document.getElementById('inputTel').value.trim();
+    const fecha = document.getElementById('inputFecha').value;
+    const notas = document.getElementById('inputNotas').value.trim();
+    const porciones = document.getElementById('inputPorciones').value;
+    const pisos = document.querySelector('input[name="pisos"]:checked').value;
+    const pan = document.getElementById('selectPan').value;
+    const relleno = document.getElementById('selectRelleno').value;
+    const estilo = document.querySelector('input[name="estilo"]:checked').value;
+
+    let extras = [];
+    if (document.getElementById('extraTopper').checked) extras.push("Cake Topper Personalizado");
+    if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
+    if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
+
+    // Guardar en Producción
+    const nuevaCotizacion = {
+      folio: currentFolio,
+      fecha: fecha,
+      cliente: nombre,
+      telefono: tel,
+      porciones: porciones,
+      pisos: pisos,
+      pan: pan,
+      relleno: relleno,
+      estilo: estilo,
+      extras: extras,
+      notas: notas,
+      foto: uploadedImageBase64,
+      precioFinal: null,
+      estado: "pendiente_produccion"
+    };
+
+    cotizacionesDB.push(nuevaCotizacion);
+
+    // Mensaje formateado para WhatsApp
+    let msg = `🎂 *NUEVA SOLICITUD DE COTIZACIÓN ${currentFolio}*\n`;
+    msg += `----------------------------------------\n`;
+    msg += `👤 *Cliente:* ${nombre}\n`;
+    msg += `📱 *Teléfono:* ${tel}\n`;
+    msg += `📅 *Fecha Evento:* ${fecha}\n\n`;
+    msg += `🍰 *ESPECIFICACIONES:*\n`;
+    msg += `• *Porciones:* ${porciones} personas (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
+    msg += `• *Bizcocho:* ${pan}\n`;
+    msg += `• *Relleno:* ${relleno}\n`;
+    msg += `• *Estilo:* ${estilo}\n`;
+    msg += `• *Extras:* ${extras.length > 0 ? extras.join(', ') : 'Ninguno'}\n`;
+    if (notas) msg += `• *Notas:* ${notas}\n`;
+    msg += `----------------------------------------\n`;
+    msg += `📌 *Enviado a lista de Producción y Tienda.*`;
+
+    const urlWa = `https://wa.me/${WHATSAPP_TIENDA}?text=${encodeURIComponent(msg)}`;
+
+    // Botón verde que al hacerle clic abre WhatsApp Y LIMPIA TODO LA PÁGINA
+    const container = document.getElementById('directWaContainer');
+    container.innerHTML = `
+      <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full mt-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
+        <i class="fab fa-whatsapp text-lg"></i>
+        <span>Confirmar Envío por WhatsApp (${currentFolio})</span>
+      </a>
+    `;
+    container.classList.remove('hidden');
+
+    alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar los datos a WhatsApp. Al hacerlo, el cotizador se limpiará automáticamente.`);
+  }
+
+  // ACCIÓN AL HACER CLIC EN EL BOTÓN DE WHATSAPP: LIMPIEZA COMPLETA DESDE 0
+  function handleWhatsAppClick() {
+    setTimeout(() => {
+      resetComplete();
+    }, 500);
+  }
+
+  // FUNCIÓN DE RESETEO COMPLETO
+  function resetComplete() {
+    // 1. Limpiar formulario HTML
+    document.getElementById('quoteForm').reset();
+    
+    // 2. Limpiar variable de la imagen
+    uploadedImageBase64 = null;
+    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+    document.getElementById('uploadPreview').classList.add('hidden');
+    document.getElementById('inputPorciones').value = 20;
+
+    // 3. Ocultar el botón verde de WhatsApp
+    const container = document.getElementById('directWaContainer');
+    container.innerHTML = "";
+    container.classList.add('hidden');
+
+    // 4. Generar nuevo Folio y actualizar resumen
+    currentFolio = generateFolio();
+    document.getElementById('summaryFolio').innerText = currentFolio;
+    updateSummary();
+  }
+
+  // PANEL STAFF LOGIC
+  function switchStaffTab(tab) {
+    const tabProd = document.getElementById('tabProduccion');
+    const tabVent = document.getElementById('tabVentas');
+    const btnProd = document.getElementById('tabProduccionBtn');
+    const btnVent = document.getElementById('tabVentasBtn');
+
+    if (tab === 'produccion') {
+      tabProd.classList.remove('hidden');
+      tabVent.classList.add('hidden');
+      btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm";
+      btnVent.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900";
+    } else {
+      tabProd.classList.add('hidden');
+      tabVent.classList.remove('hidden');
+      btnVent.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-brand-900 shadow-sm";
+      btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900";
+    }
+    renderStaffPanels();
+  }
+
+  function renderStaffPanels() {
+    // 1. DIBUJAR TARJETAS VISUALES DE PRODUCCIÓN
+    const containerProd = document.getElementById('cardsProduccionContainer');
+    containerProd.innerHTML = "";
+    const pendientesProd = cotizacionesDB.filter(c => c.estado === 'pendiente_produccion');
+    document.getElementById('countProduccionPending').innerText = `${pendientesProd.length} pendientes`;
+
+    if (pendientesProd.length === 0) {
+      containerProd.innerHTML = `<div class="bg-white p-8 rounded-2xl border text-center text-gray-400 font-medium">✨ No hay solicitudes pendientes de revisión por Producción.</div>`;
+    } else {
+      cotizacionesDB.forEach((item, index) => {
+        if (item.estado === 'pendiente_produccion') {
+          const card = document.createElement('div');
+          card.className = "bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-5 items-center";
+
+          card.innerHTML = `
+            <div class="md:col-span-3 text-center">
+              ${item.foto 
+                ? `<img src="${item.foto}" onclick="openImageZoom('${item.foto}')" class="w-full h-36 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">
+                   <p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`
+                : `<div class="w-full h-36 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Foto</div>`}
+            </div>
+
+            <div class="md:col-span-5 space-y-2 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="font-mono font-bold text-brand-900 text-sm">${item.folio}</span>
+                <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-bold text-[10px]">📅 ${item.fecha}</span>
+              </div>
+              <p class="text-sm font-bold text-gray-800">${item.cliente} <span class="font-normal text-gray-500">(${item.telefono})</span></p>
+              
+              <div class="bg-cream-50 p-2.5 rounded-lg border border-brand-100 space-y-1 text-[11px]">
+                <p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
+                <p><b>Sabor / Relleno:</b> ${item.pan} / ${item.relleno}</p>
+                <p><b>Estilo:</b> ${item.estilo}</p>
+                ${item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
+                ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
+              </div>
+            </div>
+
+            <div class="md:col-span-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
+              <label class="block text-xs font-bold text-amber-900">Ingresar Precio Técnico ($ MXN):</label>
+              <div class="relative">
+                <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
+                <input type="number" id="prodPrice_${index}" placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-sm font-bold border border-amber-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <button onclick="saveProductionPrice(${index})" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2 rounded-lg text-xs transition shadow">
+                <i class="fas fa-check mr-1"></i> Guardar Cotización
+              </button>
+            </div>
+          `;
+          containerProd.appendChild(card);
+        }
+      });
+    }
+
+    // 2. DIBUJAR TABLAS DE VENTAS
+    const tbodyVentPending = document.getElementById('tableVentasPending');
+    tbodyVentPending.innerHTML = "";
+    const pendientesVent = cotizacionesDB.filter(c => c.estado === 'cotizado_listo');
+    document.getElementById('badgeVentasPending').innerText = `${pendientesVent.length} ALERTAS`;
+
+    if (pendientesVent.length === 0) {
+      tbodyVentPending.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No hay cotizaciones pendientes por notificar.</td></tr>`;
+    } else {
+      cotizacionesDB.forEach((item, index) => {
+        if (item.estado === 'cotizado_listo') {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-rose-50/40 transition";
+
+          let msgCliente = `✨ *¡HOLA ${item.cliente.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
+          msgCliente += `Hemos evaluado el diseño de tu pastel personalizado (*Folio ${item.folio}*):\n`;
+          msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
+          msgCliente += `• *Sabor/Relleno:* ${item.pan} / ${item.relleno}\n`;
+          msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
+          msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precioFinal} MXN*\n\n`;
+          msgCliente += `Para agendar tu fecha (*${item.fecha}*), requerimos un anticipo del 50%.\n`;
+          msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
+
+          const waLink = `https://wa.me/52${item.telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
+
+          tr.innerHTML = `
+            <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
+            <td class="p-3 font-semibold">${item.cliente}<br><span class="text-[10px] text-gray-500 font-normal">${item.telefono}</span></td>
+            <td class="p-3 text-[11px]">${item.porciones} pers. - ${item.pan}</td>
+            <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precioFinal} MXN</td>
+            <td class="p-3 text-right">
+              <a href="${waLink}" target="_blank" onclick="markAsNotified(${index})" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
+                <i class="fab fa-whatsapp text-sm"></i>
+                <span>Notificar al Cliente</span>
+              </a>
+            </td>
+          `;
+          tbodyVentPending.appendChild(tr);
+        }
+      });
+    }
+
+    const tbodyVentDone = document.getElementById('tableVentasDone');
+    tbodyVentDone.innerHTML = "";
+    const notificadasVent = cotizacionesDB.filter(c => c.estado === 'notificado_cliente');
+    document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
+
+    if (notificadasVent.length === 0) {
+      tbodyVentDone.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Aún no hay cotizaciones notificadas registradas.</td></tr>`;
+    } else {
+      cotizacionesDB.forEach((item) => {
+        if (item.estado === 'notificado_cliente') {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-emerald-50/30 transition";
+          tr.innerHTML = `
+            <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
+            <td class="p-3 font-semibold">${item.cliente}</td>
+            <td class="p-3 font-bold text-emerald-700">$${item.precioFinal} MXN</td>
+            <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
+          `;
+          tbodyVentDone.appendChild(tr);
+        }
+      });
+    }
+  }
+
+  function saveProductionPrice(index) {
+    const priceVal = document.getElementById(`prodPrice_${index}`).value;
+    if (!priceVal || priceVal <= 0) {
+      alert("Por favor ingresa un precio válido asignado por producción.");
+      return;
+    }
+
+    cotizacionesDB[index].precioFinal = priceVal;
+    cotizacionesDB[index].estado = "cotizado_listo";
+
+    alert(`✅ Cotización ${cotizacionesDB[index].folio} guardada ($${priceVal} MXN). Pasó a la pestaña de 'Ventas' para ser notificada.`);
+    renderStaffPanels();
+  }
+
+  function markAsNotified(index) {
+    setTimeout(() => {
+      cotizacionesDB[index].estado = "notificado_cliente";
+      renderStaffPanels();
+    }, 1000);
+  }
+
+  function openImageZoom(src) {
+    document.getElementById('imgZoomSrc').src = src;
+    document.getElementById('modalImageZoom').classList.remove('hidden');
+  }
+
+  function closeImageZoom() {
+    document.getElementById('modalImageZoom').classList.add('hidden');
+  }
+
+  function openLoginModal() { document.getElementById('modalLogin').classList.remove('hidden'); }
+  function closeLoginModal() { document.getElementById('modalLogin').classList.add('hidden'); }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const pass = document.getElementById('inputPass').value;
+    if (pass === "1234" || pass === "admin") {
+      isStaffLoggedIn = true;
+      closeLoginModal();
+      document.getElementById('staffIndicator').classList.remove('hidden');
+      document.getElementById('viewCustomer').classList.add('hidden');
+      document.getElementById('viewStaff').classList.remove('hidden');
+      renderStaffPanels();
+    } else {
+      alert("PIN incorrecto. Intenta con 1234");
+    }
+  }
+
+  function logoutStaff() {
+    isStaffLoggedIn = false;
+    document.getElementById('staffIndicator').classList.add('hidden');
+    document.getElementById('viewStaff').classList.add('hidden');
+    document.getElementById('viewCustomer').classList.remove('hidden');
+  }
+</script>
