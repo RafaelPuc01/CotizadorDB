@@ -97,7 +97,7 @@
               <h3 class="font-serif font-bold text-lg text-brand-900">Tamaño y Estructura *</h3>
             </div>
 
-            <!-- Porciones -->
+            <!-- Porciones con escala personalizada -->
             <div>
               <div class="flex justify-between items-center mb-2">
                 <label class="text-sm font-semibold text-gray-700">Número de porciones:</label>
@@ -105,12 +105,12 @@
                   <span id="labelPorciones">20</span> personas
                 </span>
               </div>
-              <input type="range" id="inputPorciones" min="10" max="100" step="5" value="20" oninput="updateSummary()"
+              <input type="range" id="inputPorciones" min="0" max="14" step="1" value="3" oninput="updateSummary()"
                 class="w-full h-2 bg-brand-100 rounded-lg appearance-none cursor-pointer accent-brand-600">
               <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>10 pers.</span>
-                <span>50 pers.</span>
-                <span>100+ pers.</span>
+                <span>4 pers. (Min)</span>
+                <span>35 pers.</span>
+                <span>150 pers. (Max)</span>
               </div>
             </div>
 
@@ -174,7 +174,7 @@
             </div>
           </div>
 
-          <!-- PASO 3: ESTILO Y COMPLEMENTOS -->
+          <!-- PASO 3: ESTILO DESCRITO Y COMPLEMENTOS -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">3</span>
@@ -185,22 +185,31 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label class="cursor-pointer">
                   <input type="radio" name="estilo" value="Sencillo / Clásico" checked onclick="updateSummary()" class="peer hidden">
-                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl transition">
-                    <p class="font-bold text-sm text-brand-900">Liso / Sencillo</p>
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-4 rounded-xl transition h-full flex flex-col justify-between">
+                    <div>
+                      <p class="font-bold text-sm text-brand-900">Liso / Sencillo</p>
+                      <p class="text-xs text-gray-500 mt-1 leading-relaxed">Cobertura lisa o espatulada en Chantilly/Buttercream, colores lisos, sprinkles básicos o rosetones sencillos.</p>
+                    </div>
                   </div>
                 </label>
 
                 <label class="cursor-pointer">
                   <input type="radio" name="estilo" value="Tendencia / Drip Cake" onclick="updateSummary()" class="peer hidden">
-                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl transition">
-                    <p class="font-bold text-sm text-brand-900">Tendencia / Drip</p>
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-4 rounded-xl transition h-full flex flex-col justify-between">
+                    <div>
+                      <p class="font-bold text-sm text-brand-900">Tendencia / Drip</p>
+                      <p class="text-xs text-gray-500 mt-1 leading-relaxed">Efecto chorreado de chocolate (Drip), degradados de color, texturas en espátula o combinación de toppings sencillos.</p>
+                    </div>
                   </div>
                 </label>
 
                 <label class="cursor-pointer">
                   <input type="radio" name="estilo" value="Temático / Personalizado" onclick="updateSummary()" class="peer hidden">
-                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl transition">
-                    <p class="font-bold text-sm text-brand-900">Temático / Personalizado</p>
+                  <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-4 rounded-xl transition h-full flex flex-col justify-between">
+                    <div>
+                      <p class="font-bold text-sm text-brand-900">Temático / Personalizado</p>
+                      <p class="text-xs text-gray-500 mt-1 leading-relaxed">Decoración elaborada con fondant, modelados 3D, detalles pintados a mano, toppers impresos o estructura temática completa.</p>
+                    </div>
                   </div>
                 </label>
               </div>
@@ -225,31 +234,33 @@
             </div>
           </div>
 
-          <!-- PASO 4: DATOS CLIENTE + IMAGEN OBLIGATORIA -->
+          <!-- PASO 4: DATOS CLIENTE + HASTA 3 FOTOS -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">4</span>
-              <h3 class="font-serif font-bold text-lg text-brand-900">Foto de Referencia y Tus Datos *</h3>
+              <h3 class="font-serif font-bold text-lg text-brand-900">Fotos de Referencia y Tus Datos *</h3>
             </div>
 
-            <!-- Upload de Imagen Obligatorio -->
+            <!-- Upload de Múltiples Imágenes (Límite 3) -->
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Imagen / Foto de Referencia (Obligatorio) *</label>
-              <div class="border-2 border-dashed border-brand-200 bg-brand-50/30 rounded-xl p-4 text-center cursor-pointer relative hover:border-brand-500 transition">
-                <input type="file" id="inputImage" accept="image/*" required onchange="handleImageUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-sm font-semibold text-gray-700">Fotos de Referencia (1 a 3 fotos) *</label>
+                <span id="photoCounterBadge" class="text-[11px] font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-100">0 / 3 fotos</span>
+              </div>
+
+              <!-- Dropzone -->
+              <div id="dropzoneContainer" class="border-2 border-dashed border-brand-200 bg-brand-50/30 rounded-xl p-4 text-center cursor-pointer relative hover:border-brand-500 transition">
+                <input type="file" id="inputImage" accept="image/*" multiple onchange="handleMultipleImagesUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                 <div id="uploadPlaceholder">
                   <i class="fas fa-camera text-2xl text-brand-500 mb-1"></i>
-                  <p class="text-xs text-gray-600 font-medium">Adjunta una foto o ejemplo de la idea de pastel que deseas *</p>
-                  <p class="text-[10px] text-gray-400">Archivos PNG, JPG o WEBP</p>
+                  <p class="text-xs text-gray-600 font-medium">Haz clic o arrastra de 1 a 3 imágenes de referencia *</p>
+                  <p class="text-[10px] text-gray-400">Puedes seleccionar varias fotos a la vez (PNG, JPG, WEBP)</p>
                 </div>
-                <div id="uploadPreview" class="hidden flex items-center justify-center space-x-3">
-                  <img id="imgPreviewSrc" src="" alt="Vista previa" class="w-16 h-16 object-cover rounded-lg border border-brand-200">
-                  <div class="text-left">
-                    <p id="imgPreviewName" class="text-xs font-semibold text-brand-900 truncate max-w-[200px]"></p>
-                    <p class="text-[10px] text-emerald-600 font-bold">✓ Foto adjuntada correctamente</p>
-                    <span class="text-[10px] text-brand-600 underline">Cambiar foto</span>
-                  </div>
-                </div>
+              </div>
+
+              <!-- Galería de vistas previas -->
+              <div id="imagesPreviewGallery" class="grid grid-cols-3 gap-3 mt-3 hidden">
+                <!-- Se dibuja dinámicamente -->
               </div>
             </div>
 
@@ -302,7 +313,7 @@
                 <span id="sumEstilo" class="font-semibold text-gray-800">Sencillo / Clásico</span>
               </div>
               <div class="flex justify-between py-1 border-b border-gray-50">
-                <span class="text-gray-500">Foto Referencia:</span>
+                <span class="text-gray-500">Fotos Referencia:</span>
                 <span id="sumFoto" class="font-bold text-red-500">❌ Pendiente</span>
               </div>
             </div>
@@ -352,7 +363,7 @@
       <!-- SECCIÓN A: PANEL DE PRODUCCIÓN -->
       <div id="tabProduccion" class="space-y-4">
         <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center justify-between">
-          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos del pastel, visualiza la imagen de referencia y asigna el precio exacto.</span>
+          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos del pastel, visualiza las imágenes de referencia y asigna el precio exacto.</span>
           <span class="font-bold bg-amber-200 px-2.5 py-1 rounded-full text-[11px]" id="countProduccionPending">0 pendientes</span>
         </div>
 
@@ -471,11 +482,16 @@
   </footer>
 
 
-  <!-- JAVASCRIPT CORREGIDO Y SEGURO -->
+  <!-- JAVASCRIPT CON MÚLTIPLES FOTOS Y ESCALA DE PORCIONES -->
   <script>
     const WHATSAPP_TIENDA = "522741352901"; 
     let isStaffLoggedIn = false;
-    let uploadedImageBase64 = null;
+    
+    // Lista exacta de porciones
+    const PORCIONES_LISTA = [4, 8, 12, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 150];
+    
+    // Arreglo para almacenar hasta 3 imágenes en Base64
+    let uploadedImagesList = [];
     let currentFolio = generateFolio();
 
     // Base de datos local
@@ -492,7 +508,7 @@
         estilo: "Temático / Personalizado",
         extras: ["Cake Topper Personalizado"],
         notas: "Temática de Minnie Mouse, letrero con 'Sofía 3 años'",
-        foto: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=400&auto=format&fit=crop&q=80",
+        fotos: ["https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=400&auto=format&fit=crop&q=80"],
         precioFinal: null,
         estado: "pendiente_produccion"
       }
@@ -502,64 +518,138 @@
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
     }
 
-    // ESPERAR A QUE EL DOM ESTÉ COMPLETAMENTE CARGADO PARA EVITAR EL ERROR
-    document.addEventListener("DOMContentLoaded", () => {
+    // INICIALIZACIÓN SEGURA AL CARGAR EL DOM
+    function initApp() {
       const folioEl = document.getElementById('summaryFolio');
       if (folioEl) {
         folioEl.innerText = currentFolio;
       }
       updateSummary();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
 
     // Actualiza Resumen en Lateral
     function updateSummary() {
-      const porcionesEl = document.getElementById('inputPorciones');
-      if (!porcionesEl) return;
+      const porcionesIndex = document.getElementById('inputPorciones') ? parseInt(document.getElementById('inputPorciones').value) : 3;
+      const porcionesValor = PORCIONES_LISTA[porcionesIndex] || 20;
 
-      const porciones = porcionesEl.value;
-      const pisos = document.querySelector('input[name="pisos"]:checked').value;
-      const pan = document.getElementById('selectPan').value;
-      const relleno = document.getElementById('selectRelleno').value;
-      const estilo = document.querySelector('input[name="estilo"]:checked').value;
+      const pisosRadio = document.querySelector('input[name="pisos"]:checked');
+      const pisos = pisosRadio ? pisosRadio.value : "1";
 
-      document.getElementById('labelPorciones').innerText = porciones;
-      document.getElementById('sumPorciones').innerText = `${porciones} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
+      const panEl = document.getElementById('selectPan');
+      const pan = panEl ? panEl.value : "";
+
+      const rellenoEl = document.getElementById('selectRelleno');
+      const relleno = rellenoEl ? rellenoEl.value : "";
+
+      const estiloRadio = document.querySelector('input[name="estilo"]:checked');
+      const estilo = estiloRadio ? estiloRadio.value : "Sencillo / Clásico";
+
+      document.getElementById('labelPorciones').innerText = porcionesValor;
+      document.getElementById('sumPorciones').innerText = `${porcionesValor} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
       
       document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
       document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
       document.getElementById('sumEstilo').innerText = estilo;
-      document.getElementById('sumFoto').innerHTML = uploadedImageBase64 ? `<span class="text-emerald-600 font-bold">✓ Adjuntada</span>` : `<span class="text-red-500 font-bold">❌ Pendiente</span>`;
+      
+      const numFotos = uploadedImagesList.length;
+      document.getElementById('sumFoto').innerHTML = numFotos > 0 
+        ? `<span class="text-emerald-600 font-bold">✓ ${numFotos} foto(s)</span>` 
+        : `<span class="text-red-500 font-bold">❌ Pendiente</span>`;
 
       validateForm();
     }
 
-    // Carga de Imagen
-    function handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
+    // CARGA DE HASTA 3 IMÁGENES
+    function handleMultipleImagesUpload(event) {
+      const files = Array.from(event.target.files);
+      if (!files || files.length === 0) return;
+
+      const espacioDisponible = 3 - uploadedImagesList.length;
+
+      if (espacioDisponible <= 0) {
+        alert("Ya has alcanzado el límite máximo de 3 fotos de referencia.");
+        event.target.value = "";
+        return;
+      }
+
+      const filesToProcess = files.slice(0, espacioDisponible);
+
+      let processedCount = 0;
+      filesToProcess.forEach(file => {
         const reader = new FileReader();
         reader.onload = function(e) {
-          uploadedImageBase64 = e.target.result;
-          document.getElementById('uploadPlaceholder').classList.add('hidden');
-          document.getElementById('uploadPreview').classList.remove('hidden');
-          document.getElementById('imgPreviewSrc').src = e.target.result;
-          document.getElementById('imgPreviewName').innerText = file.name;
-          updateSummary();
+          uploadedImagesList.push(e.target.result);
+          processedCount++;
+          if (processedCount === filesToProcess.length) {
+            renderImageGallery();
+            updateSummary();
+          }
         };
         reader.readAsDataURL(file);
+      });
+
+      event.target.value = "";
+    }
+
+    // DIBUJAR GALERÍA DE VISTAS PREVIAS
+    function renderImageGallery() {
+      const gallery = document.getElementById('imagesPreviewGallery');
+      const placeholder = document.getElementById('uploadPlaceholder');
+      const counterBadge = document.getElementById('photoCounterBadge');
+
+      counterBadge.innerText = `${uploadedImagesList.length} / 3 fotos`;
+
+      if (uploadedImagesList.length === 0) {
+        gallery.classList.add('hidden');
+        gallery.innerHTML = "";
+        placeholder.classList.remove('hidden');
+        return;
+      }
+
+      gallery.classList.remove('hidden');
+      gallery.innerHTML = "";
+
+      uploadedImagesList.forEach((src, idx) => {
+        const container = document.createElement('div');
+        container.className = "relative group border border-brand-200 rounded-xl overflow-hidden bg-white shadow-sm";
+        container.innerHTML = `
+          <img src="${src}" class="w-full h-20 object-cover">
+          <button type="button" onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow hover:bg-red-700 transition">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        gallery.appendChild(container);
+      });
+
+      if (uploadedImagesList.length >= 3) {
+        placeholder.classList.add('hidden');
+      } else {
+        placeholder.classList.remove('hidden');
       }
     }
 
-    // VALIDACIÓN ESTRICTA
+    function removeImage(index) {
+      uploadedImagesList.splice(index, 1);
+      renderImageGallery();
+      updateSummary();
+    }
+
+    // VALIDACIÓN ESTRICTA (TODOS LOS CAMPOS OBLIGATORIOS)
     function validateForm() {
       const pan = document.getElementById('selectPan').value;
       const relleno = document.getElementById('selectRelleno').value;
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
-      const tieneFoto = uploadedImageBase64 !== null;
+      const tieneFotos = uploadedImagesList.length > 0;
 
-      const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFoto;
+      const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFotos;
 
       const btn = document.getElementById('btnMandarCotizar');
       const warning = document.getElementById('validationWarning');
@@ -583,7 +673,10 @@
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
       const notas = document.getElementById('inputNotas').value.trim();
-      const porciones = document.getElementById('inputPorciones').value;
+      
+      const porcionesIndex = parseInt(document.getElementById('inputPorciones').value);
+      const porciones = PORCIONES_LISTA[porcionesIndex] || 20;
+
       const pisos = document.querySelector('input[name="pisos"]:checked').value;
       const pan = document.getElementById('selectPan').value;
       const relleno = document.getElementById('selectRelleno').value;
@@ -606,7 +699,7 @@
         estilo: estilo,
         extras: extras,
         notas: notas,
-        foto: uploadedImageBase64,
+        fotos: [...uploadedImagesList],
         precioFinal: null,
         estado: "pendiente_produccion"
       };
@@ -623,6 +716,7 @@
       msg += `• *Bizcocho:* ${pan}\n`;
       msg += `• *Relleno:* ${relleno}\n`;
       msg += `• *Estilo:* ${estilo}\n`;
+      msg += `• *Fotos adjuntas:* ${uploadedImagesList.length} imagen(es)\n`;
       msg += `• *Extras:* ${extras.length > 0 ? extras.join(', ') : 'Ninguno'}\n`;
       if (notas) msg += `• *Notas:* ${notas}\n`;
       msg += `----------------------------------------\n`;
@@ -650,14 +744,10 @@
 
     function resetComplete() {
       document.getElementById('quoteForm').reset();
-      uploadedImageBase64 = null;
-      
-      const placeholder = document.getElementById('uploadPlaceholder');
-      const preview = document.getElementById('uploadPreview');
-      if (placeholder) placeholder.classList.remove('hidden');
-      if (preview) preview.classList.add('hidden');
+      uploadedImagesList = [];
+      renderImageGallery();
 
-      document.getElementById('inputPorciones').value = 20;
+      document.getElementById('inputPorciones').value = 3; // Por defecto 20 pers
 
       const container = document.getElementById('directWaContainer');
       if (container) {
@@ -709,15 +799,24 @@
             const card = document.createElement('div');
             card.className = "bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-5 items-center";
 
+            // Render imágenes
+            let fotosHtml = "";
+            if (item.fotos && item.fotos.length > 0) {
+              fotosHtml = `<div class="grid grid-cols-${Math.min(item.fotos.length, 3)} gap-1.5">`;
+              item.fotos.forEach(f => {
+                fotosHtml += `<img src="${f}" onclick="openImageZoom('${f}')" class="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">`;
+              });
+              fotosHtml += `</div><p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`;
+            } else {
+              fotosHtml = `<div class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Fotos</div>`;
+            }
+
             card.innerHTML = `
-              <div class="md:col-span-3 text-center">
-                ${item.foto 
-                  ? `<img src="${item.foto}" onclick="openImageZoom('${item.foto}')" class="w-full h-36 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-inner">
-                     <p class="text-[10px] text-brand-600 font-semibold mt-1"><i class="fas fa-search-plus"></i> Clic para ampliar</p>`
-                  : `<div class="w-full h-36 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">Sin Foto</div>`}
+              <div class="md:col-span-4 text-center">
+                ${fotosHtml}
               </div>
 
-              <div class="md:col-span-5 space-y-2 text-xs">
+              <div class="md:col-span-4 space-y-2 text-xs">
                 <div class="flex justify-between items-center">
                   <span class="font-mono font-bold text-brand-900 text-sm">${item.folio}</span>
                   <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-bold text-[10px]">📅 ${item.fecha}</span>
