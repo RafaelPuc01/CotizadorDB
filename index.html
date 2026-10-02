@@ -12,6 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- html2pdf.js CDN para la descarga de PDF de la cotización -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <script>
     // CREDENCIALES DE SUPABASE
@@ -54,7 +56,7 @@
 </head>
 <body class="bg-cream-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between custom-scrollbar">
 
-  <!-- HEADER CON BOTÓN ACCESIBLE DE STAFF -->
+  <!-- HEADER CON BOTÓN ACCESIBLE DE STAFF Y SEGUIMIENTO -->
   <header class="bg-white/80 backdrop-blur-md border-b border-brand-100 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
@@ -68,21 +70,26 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <a href="https://wa.me/522741352901" target="_blank" class="hidden sm:flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition border border-emerald-200 font-medium">
+        <button onclick="openTrackerModal()" class="flex items-center space-x-1 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full border border-brand-200 transition">
+          <i class="fas fa-search text-brand-600"></i>
+          <span class="hidden sm:inline">Consultar Folio</span>
+        </button>
+
+        <a href="https://wa.me/522741352901" target="_blank" class="hidden md:flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition border border-emerald-200 font-medium">
           <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
-          <span>Tienda: 274 135 2901</span>
+          <span>Tienda</span>
         </a>
 
         <!-- BOTÓN RÁPIDO DE ACCESO EQUIPO DB -->
         <button id="btnStaffAccessHeader" onclick="openLoginModal()" class="flex items-center space-x-1.5 text-xs font-bold text-brand-800 bg-brand-100 hover:bg-brand-200 px-3 py-1.5 rounded-full transition shadow-sm border border-brand-200">
           <i class="fas fa-key text-brand-600"></i>
-          <span>Acceso Equipo DB</span>
+          <span>Equipo DB</span>
         </button>
 
         <!-- INDICADOR DE SESIÓN ACTIVA -->
         <div id="staffIndicator" class="hidden flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-xs font-medium text-amber-800">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span>Panel Interno Activo</span>
+          <span>Panel Interno</span>
           <button onclick="logoutStaff()" class="ml-1 text-amber-900 underline hover:text-red-600 font-bold">Salir</button>
         </div>
       </div>
@@ -299,7 +306,7 @@
             </div>
           </div>
 
-          <!-- PASO 4: DATOS CLIENTE + MÚLTIPLES FOTOS -->
+          <!-- PASO 4: DATOS CLIENTE + BLOQUEO DE DOMINGOS -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">4</span>
@@ -336,8 +343,9 @@
                 <input type="tel" id="inputTel" required placeholder="Ej. 2741234567" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Fecha de Evento *</label>
-                <input type="date" id="inputFecha" required class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Fecha de Evento (No domingos) *</label>
+                <input type="date" id="inputFecha" required onchange="validateSundayDate(event)" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <p id="sundayErrorMsg" class="hidden text-[10px] text-red-600 font-bold mt-1">❌ No laboramos los domingos. Por favor elige otro día.</p>
               </div>
             </div>
 
@@ -399,7 +407,7 @@
               <span>Mandar a Cotizar</span>
             </button>
 
-            <div id="directWaContainer" class="hidden"></div>
+            <div id="directWaContainer" class="hidden space-y-2"></div>
           </div>
         </div>
 
@@ -407,7 +415,7 @@
     </div>
 
 
-    <!-- VISTA 2: PANEL INTERNO (PRODUCCIÓN & VENTAS) -->
+    <!-- VISTA 2: PANEL INTERNO (PRODUCCIÓN & VENTAS CON FILTROS) -->
     <div id="viewStaff" class="hidden space-y-6">
       
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 pb-4 gap-3">
@@ -423,6 +431,22 @@
           <button id="tabVentasBtn" onclick="switchStaffTab('ventas')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-brand-900">
             <i class="fas fa-paper-plane mr-1"></i> Ventas & Notificaciones
           </button>
+        </div>
+      </div>
+
+      <!-- BARRA DE BÚSQUEDA Y FILTROS INTERNA -->
+      <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div class="relative w-full sm:w-72">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
+          <input type="text" id="staffSearchInput" oninput="renderStaffPanels()" placeholder="Buscar por cliente o folio..." class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        </div>
+        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end text-xs">
+          <span class="text-gray-500 font-semibold">Filtrar:</span>
+          <select id="staffFilterType" onchange="renderStaffPanels()" class="border border-gray-200 rounded-xl p-2 focus:outline-none text-xs">
+            <option value="todos">Todos los productos</option>
+            <option value="pastel">Solo Pasteles</option>
+            <option value="postre">Solo Otros Postres</option>
+          </select>
         </div>
       </div>
 
@@ -506,6 +530,28 @@
 
   </main>
 
+  <!-- MODAL BÚSQUEDA / SEGUIMIENTO DE FOLIO (CLIENTE) -->
+  <div id="modalTracker" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-brand-100 relative space-y-4">
+      <button onclick="closeTrackerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+
+      <div class="text-center space-y-1">
+        <div class="w-10 h-10 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center mx-auto text-lg"><i class="fas fa-search"></i></div>
+        <h3 class="font-serif font-bold text-xl text-brand-900">Consulta tu Cotización</h3>
+        <p class="text-xs text-gray-500">Ingresa tu número de folio (Ejemplo: #DB-8492)</p>
+      </div>
+
+      <div class="flex gap-2">
+        <input type="text" id="trackerInput" placeholder="#DB-XXXX" class="flex-grow border border-gray-300 rounded-xl p-2.5 font-mono text-center text-sm uppercase focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        <button onclick="searchFolioStatus()" class="bg-brand-700 hover:bg-brand-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">Buscar</button>
+      </div>
+
+      <div id="trackerResult" class="hidden bg-cream-50 p-4 rounded-xl border border-brand-100 space-y-2 text-xs">
+        <!-- Render dinámico -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL ZOOM DE IMAGEN -->
   <div id="modalImageZoom" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeImageZoom()">
     <div class="max-w-2xl w-full text-center relative" onclick="event.stopPropagation()">
@@ -535,6 +581,37 @@
     </div>
   </div>
 
+  <!-- PLANTILLA OCULTA PARA GENERAR PDF DE COTIZACIÓN -->
+  <div id="pdfTemplate" class="hidden p-8 bg-white text-gray-800 font-sans max-w-xl mx-auto border border-gray-200">
+    <div class="flex justify-between items-center border-b pb-4 mb-4">
+      <div>
+        <h2 class="font-serif text-2xl font-bold text-brand-900">Dulce Bocado</h2>
+        <p class="text-xs text-gray-500">Repostería Artesanal • Tierra Blanca, Ver.</p>
+      </div>
+      <div class="text-right">
+        <span id="pdfFolio" class="font-mono font-bold text-lg text-brand-700">#DB-0000</span>
+        <p id="pdfFecha" class="text-xs text-gray-400"></p>
+      </div>
+    </div>
+
+    <div class="space-y-3 text-xs mb-6">
+      <p><b>Cliente:</b> <span id="pdfCliente"></span></p>
+      <p><b>Teléfono:</b> <span id="pdfTel"></span></p>
+      <p><b>Fecha de Evento:</b> <span id="pdfFechaEvento" class="font-bold text-brand-800"></span></p>
+      <hr>
+      <div id="pdfDetalles" class="space-y-1"></div>
+      <p><b>Estilo:</b> <span id="pdfEstilo"></span></p>
+      <p><b>Extras:</b> <span id="pdfExtras"></span></p>
+      <p id="pdfNotasContainer"><b>Notas:</b> <span id="pdfNotas"></span></p>
+    </div>
+
+    <div class="bg-cream-50 p-4 rounded-xl border border-brand-100 text-center space-y-1">
+      <p class="text-xs text-gray-500">PRECIO ESTIMADO TOTAL</p>
+      <p id="pdfPrecio" class="text-2xl font-extrabold text-emerald-700">$0.00 MXN</p>
+      <p class="text-[10px] text-amber-800 mt-1">⚠️ Anticipo del 50% requerido para agendar fecha.</p>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer class="bg-white border-t border-brand-100 mt-12 py-6 text-center text-xs text-gray-500">
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
@@ -556,12 +633,30 @@
     const PORCIONES_LISTA = [4, 8, 12, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 150];
     let uploadedImagesList = [];
     let currentFolio = generateFolio();
+    let currentQuoteDataForPdf = null;
 
     function generateFolio() {
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
     }
 
-    // FECHA LÍMITE (RESTA DÍAS A UNA FECHA Y FORMATEA)
+    // VALIDACIÓN DE DOMINGOS (RESTRICCIÓN)
+    function validateSundayDate(e) {
+      const inputDate = e.target.value;
+      const errorMsg = document.getElementById('sundayErrorMsg');
+      if (!inputDate) return;
+
+      const partes = inputDate.split('-');
+      const dayOfWeek = new Date(partes[0], partes[1] - 1, partes[2]).getDay();
+
+      if (dayOfWeek === 0) { // 0 = Domingo
+        errorMsg.classList.remove('hidden');
+        e.target.value = "";
+      } else {
+        errorMsg.classList.add('hidden');
+      }
+      validateForm();
+    }
+
     function calcularFechaLimite(fechaEventoStr, diasResta = 4) {
       if (!fechaEventoStr) return "N/A";
       const partes = fechaEventoStr.split('-');
@@ -625,7 +720,6 @@
       document.getElementById('viewCustomer').classList.remove('hidden');
     }
 
-    // CAMBIO DE TIPO DE PRODUCTO (PASTEL vs OTROS POSTRES)
     function toggleTipoProducto(tipo) {
       const bloquePastel = document.getElementById('bloquePastelEstructura');
       const bloquePostres = document.getElementById('bloquePostres');
@@ -830,6 +924,24 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
 
+      // Objeto para PDF
+      currentQuoteDataForPdf = {
+        folio: currentFolio,
+        cliente: nombre,
+        telefono: tel,
+        fechaEvento: fecha,
+        tipoProducto: tipoProducto,
+        porciones: porciones,
+        pisos: pisos,
+        saborPan: pan,
+        relleno: relleno,
+        variedadPostre: variedadPostre,
+        cantidadPiezas: cantidadPiezas,
+        estilo: estilo,
+        extras: extras,
+        notas: notas
+      };
+
       // INSERTAR EN SUPABASE
       const { data, error } = await _supabase
         .from('cotizaciones')
@@ -886,14 +998,18 @@
 
       const container = document.getElementById('directWaContainer');
       container.innerHTML = `
-        <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full mt-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
+        <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
           <i class="fab fa-whatsapp text-lg"></i>
           <span>Confirmar Envío por WhatsApp (${currentFolio})</span>
         </a>
+        <button type="button" onclick="downloadPDF()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center space-x-1 border transition">
+          <i class="fas fa-file-pdf text-red-600"></i>
+          <span>Descargar Ficha en PDF</span>
+        </button>
       `;
       container.classList.remove('hidden');
 
-      alert(`✅ ¡Solicitud ${currentFolio} guardada en Supabase!\n\nHaz clic en el botón verde para enviar los datos a WhatsApp.`);
+      alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar a WhatsApp o descarga tu Ficha en PDF.`);
     }
 
     function handleWhatsAppClick() {
@@ -924,7 +1040,101 @@
       updateSummary();
     }
 
-    // PANEL STAFF (SUPABASE READ/UPDATE)
+    // BUSCADOR / SEGUIMIENTO DE FOLIO PARA EL CLIENTE
+    async function searchFolioStatus() {
+      const folioInput = document.getElementById('trackerInput').value.trim();
+      const resultDiv = document.getElementById('trackerResult');
+
+      if (!folioInput) {
+        alert("Por favor ingresa un folio válido.");
+        return;
+      }
+
+      resultDiv.innerHTML = `<p class="text-center text-gray-500">Buscando folio ${folioInput}...</p>`;
+      resultDiv.classList.remove('hidden');
+
+      const { data, error } = await _supabase
+        .from('cotizaciones')
+        .select('*')
+        .eq('folio', folioInput.toUpperCase())
+        .single();
+
+      if (error || !data) {
+        resultDiv.innerHTML = `<p class="text-red-600 text-center font-bold">❌ Folio no encontrado. Verifica el código de tu solicitud.</p>`;
+        return;
+      }
+
+      let statusBadge = "";
+      if (data.estado === 'pendiente_produccion') {
+        statusBadge = `<span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-[10px]">⏳ En revisión por Producción</span>`;
+      } else if (data.estado === 'cotizado_listo') {
+        statusBadge = `<span class="bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✨ Cotizado - Listo para agendar</span>`;
+      } else {
+        statusBadge = `<span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✅ Notificado y Agendado</span>`;
+      }
+
+      let detalleText = data.tipo_producto === 'postre' 
+        ? `${data.variedad_postre} (${data.cantidad_piezas})` 
+        : `${data.porciones} personas - ${data.sabor_pan}`;
+
+      let precioText = data.precio_final ? `$${data.precio_final} MXN` : 'Pendiente de asignación';
+
+      resultDiv.innerHTML = `
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="font-mono font-bold text-brand-900">${data.folio}</span>
+          ${statusBadge}
+        </div>
+        <p><b>Cliente:</b> ${data.cliente_nombre}</p>
+        <p><b>Detalle:</b> ${detalleText}</p>
+        <p><b>Fecha Evento:</b> ${data.fecha_evento}</p>
+        <p class="font-bold text-sm text-brand-900 mt-1">Precio Estimado: ${precioText}</p>
+      `;
+    }
+
+    // GENERAR Y DESCARGAR PDF DE LA COTIZACIÓN
+    function downloadPDF() {
+      if (!currentQuoteDataForPdf) return;
+
+      const d = currentQuoteDataForPdf;
+      document.getElementById('pdfFolio').innerText = d.folio;
+      document.getElementById('pdfFecha').innerText = new Date().toLocaleDateString('es-MX');
+      document.getElementById('pdfCliente').innerText = d.cliente;
+      document.getElementById('pdfTel').innerText = d.telefono;
+      document.getElementById('pdfFechaEvento').innerText = d.fechaEvento;
+      document.getElementById('pdfEstilo').innerText = d.estilo;
+      document.getElementById('pdfExtras').innerText = d.extras.length > 0 ? d.extras.join(', ') : 'Ninguno';
+      
+      if (d.notas) {
+        document.getElementById('pdfNotasContainer').classList.remove('hidden');
+        document.getElementById('pdfNotas').innerText = d.notas;
+      } else {
+        document.getElementById('pdfNotasContainer').classList.add('hidden');
+      }
+
+      const detDiv = document.getElementById('pdfDetalles');
+      if (d.tipoProducto === 'postre') {
+        detDiv.innerHTML = `<p><b>Postre:</b> ${d.variedadPostre}</p><p><b>Cantidad:</b> ${d.cantidadPiezas}</p>`;
+      } else {
+        detDiv.innerHTML = `<p><b>Porciones:</b> ${d.porciones} personas (${d.pisos} pisos)</p><p><b>Bizcocho:</b> ${d.saborPan}</p><p><b>Relleno:</b> ${d.relleno}</p>`;
+      }
+
+      const element = document.getElementById('pdfTemplate');
+      element.classList.remove('hidden');
+
+      const opt = {
+        margin:       0.5,
+        filename:     `Cotizacion_${d.folio}_DulceBocado.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.classList.add('hidden');
+      });
+    }
+
+    // PANEL STAFF (CON FILTROS Y BÚSQUEDA)
     function switchStaffTab(tab) {
       const tabProd = document.getElementById('tabProduccion');
       const tabVent = document.getElementById('tabVentas');
@@ -956,14 +1166,24 @@
         return;
       }
 
+      const searchQuery = document.getElementById('staffSearchInput') ? document.getElementById('staffSearchInput').value.toLowerCase().trim() : "";
+      const filterType = document.getElementById('staffFilterType') ? document.getElementById('staffFilterType').value : "todos";
+
+      // Aplicar Búsqueda y Filtros
+      let filteredData = cotizaciones.filter(item => {
+        const matchesSearch = item.cliente_nombre.toLowerCase().includes(searchQuery) || item.folio.toLowerCase().includes(searchQuery);
+        const matchesType = filterType === "todos" || item.tipo_producto === filterType;
+        return matchesSearch && matchesType;
+      });
+
       // 1. Producción
       const containerProd = document.getElementById('cardsProduccionContainer');
       containerProd.innerHTML = "";
-      const pendientesProd = cotizaciones.filter(c => c.estado === 'pendiente_produccion');
+      const pendientesProd = filteredData.filter(c => c.estado === 'pendiente_produccion');
       document.getElementById('countProduccionPending').innerText = `${pendientesProd.length} pendientes`;
 
       if (pendientesProd.length === 0) {
-        containerProd.innerHTML = `<div class="bg-white p-8 rounded-2xl border text-center text-gray-400 font-medium">✨ No hay solicitudes pendientes de revisión por Producción.</div>`;
+        containerProd.innerHTML = `<div class="bg-white p-8 rounded-2xl border text-center text-gray-400 font-medium">✨ No hay solicitudes pendientes coincidentes.</div>`;
       } else {
         pendientesProd.forEach((item) => {
           const card = document.createElement('div');
@@ -1023,7 +1243,7 @@
       // 2. Ventas (Pendientes)
       const tbodyVentPending = document.getElementById('tableVentasPending');
       tbodyVentPending.innerHTML = "";
-      const pendientesVent = cotizaciones.filter(c => c.estado === 'cotizado_listo');
+      const pendientesVent = filteredData.filter(c => c.estado === 'cotizado_listo');
       document.getElementById('badgeVentasPending').innerText = `${pendientesVent.length} ALERTAS`;
 
       if (pendientesVent.length === 0) {
@@ -1077,7 +1297,7 @@
       // 3. Ventas (Notificadas)
       const tbodyVentDone = document.getElementById('tableVentasDone');
       tbodyVentDone.innerHTML = "";
-      const notificadasVent = cotizaciones.filter(c => c.estado === 'notificado_cliente');
+      const notificadasVent = filteredData.filter(c => c.estado === 'notificado_cliente');
       document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
 
       if (notificadasVent.length === 0) {
@@ -1132,6 +1352,9 @@
         setTimeout(() => { renderStaffPanels(); }, 1000);
       }
     }
+
+    function openTrackerModal() { document.getElementById('modalTracker').classList.remove('hidden'); }
+    function closeTrackerModal() { document.getElementById('modalTracker').classList.add('hidden'); }
 
     function openImageZoom(src) {
       document.getElementById('imgZoomSrc').src = src;
