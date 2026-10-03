@@ -18,7 +18,7 @@
   <script>
     // CREDENCIALES DE SUPABASE
     const SUPABASE_URL = "https://gxlpghbsqxvhbvgsqdnc.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4bHBnaGJzcXh2aGJ2Z3NxZG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjQzNDYsImV4cCI6MjEwNjQwMDM0Nn0.zWANafZaswbBk6gQSvHq52nEM5t4UTFvV3ewZBb-qMs"; // Pega aquí tu Anon Key pública
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4bHBnaGJzcXh2aGJ2Z3NxZG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjQzNDYsImV4cCI6MjEwNjQwMDM0Nn0.zWANafZaswbBk6gQSvHq52nEM5t4UTFvV3ewZBb-qMs"; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     tailwind.config = {
@@ -404,7 +404,7 @@
             <button type="button" id="btnMandarCotizar" disabled onclick="submitQuoteRequest()" 
               class="w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
               <i class="fas fa-paper-plane text-base"></i>
-              <span>Mandar a Cotizar</span>
+              <span>Mandar a Producción</span>
             </button>
 
             <div id="directWaContainer" class="hidden space-y-2"></div>
@@ -624,7 +624,7 @@
   </footer>
 
 
-  <!-- JAVASCRIPT INTEGRADO -->
+  <!-- JAVASCRIPT INTEGRADO CON FUNCIONES CORREGIDAS -->
   <script>
     const WHATSAPP_TIENDA = "522741352901"; 
     const PIN_EQUIPO_DB = "201217"; 
@@ -859,7 +859,8 @@
       updateSummary();
     }
 
-    function () {
+    // FUNCIÓN DE VALIDACIÓN CORREGIDA (CON NOMBRE)
+    function validateForm() {
       const tipoProducto = document.querySelector('input[name="tipoProducto"]:checked') ? document.querySelector('input[name="tipoProducto"]:checked').value : 'pastel';
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
@@ -884,7 +885,8 @@
 
       if (isValid) {
         btn.disabled = false;
-        btn.className = "w-full bg-brand-700 hover:bg-brand-800 text-white cursor-pointer font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm";        btn.innerHTML = `<i class="fas fa-paper-plane text-base"></i><span>Mandar a Producción</span>`;
+        btn.className = "w-full bg-brand-700 hover:bg-brand-800 text-white cursor-pointer font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm";
+        btn.innerHTML = `<i class="fas fa-paper-plane text-base"></i><span>Mandar a Producción</span>`;
         warning.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800 font-medium";
         warning.innerHTML = `<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Todos los campos requeridos están listos!`;
       } else {
