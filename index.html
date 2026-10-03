@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- html2pdf.js CDN para la descarga de PDF de la cotización -->
+  <!-- html2pdf.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <script>
@@ -56,7 +56,7 @@
 </head>
 <body class="bg-cream-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between custom-scrollbar">
 
-  <!-- HEADER CON BOTÓN ACCESIBLE DE STAFF Y SEGUIMIENTO -->
+  <!-- HEADER -->
   <header class="bg-white/80 backdrop-blur-md border-b border-brand-100 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
@@ -80,13 +80,13 @@
           <span>Tienda</span>
         </a>
 
-        <!-- BOTÓN RÁPIDO DE ACCESO EQUIPO DB -->
+        <!-- BOTÓN ACCESO EQUIPO DB -->
         <button id="btnStaffAccessHeader" onclick="openLoginModal()" class="flex items-center space-x-1.5 text-xs font-bold text-brand-800 bg-brand-100 hover:bg-brand-200 px-3 py-1.5 rounded-full transition shadow-sm border border-brand-200">
           <i class="fas fa-key text-brand-600"></i>
           <span>Equipo DB</span>
         </button>
 
-        <!-- INDICADOR DE SESIÓN ACTIVA -->
+        <!-- INDICADOR SESIÓN STAFF -->
         <div id="staffIndicator" class="hidden flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-xs font-medium text-amber-800">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span>Panel Interno</span>
@@ -111,7 +111,7 @@
         <!-- FORMULARIO CLIENTE (COL 8) -->
         <div class="lg:col-span-8 space-y-6">
 
-          <!-- PASO 0: SELECCIÓN DE TIPO DE PRODUCTO -->
+          <!-- PASO 0: SELECCIÓN TIPO PRODUCTO -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-4">
             <label class="block text-sm font-semibold text-gray-700">¿Qué te gustaría cotizar hoy? *</label>
             <div class="grid grid-cols-2 gap-3">
@@ -133,9 +133,9 @@
             </div>
           </div>
 
-          <!-- BLOQUE OPCIÓN A: PASTEL PERSONALIZADO -->
+          <!-- BLOQUE A: PASTEL PERSONALIZADO -->
           <div id="bloquePastelEstructura" class="space-y-6">
-            <!-- PASO 1: TAMAÑO Y PORCIONES -->
+            <!-- PASO 1: PORCIONES Y ESTRUCTURA -->
             <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
               <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
                 <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">1</span>
@@ -144,17 +144,17 @@
 
               <div>
                 <div class="flex justify-between items-center mb-2">
-                  <label class="text-sm font-semibold text-gray-700">Número de porciones:</label>
+                  <label class="text-sm font-semibold text-gray-700">Porciones aproximadas:</label>
                   <span class="text-brand-700 font-bold text-lg bg-brand-50 px-3 py-1 rounded-lg border border-brand-100">
-                    <span id="labelPorciones">20</span> personas
+                    <span id="labelPorciones">20-25</span> porciones
                   </span>
                 </div>
-                <input type="range" id="inputPorciones" min="0" max="14" step="1" value="3" oninput="updateSummary()"
+                <input type="range" id="inputPorciones" min="0" max="9" step="1" value="3" oninput="updateSummary()"
                   class="w-full h-2 bg-brand-100 rounded-lg appearance-none cursor-pointer accent-brand-600">
                 <div class="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>4 pers. (Min)</span>
-                  <span>35 pers.</span>
-                  <span>150 pers. (Max)</span>
+                  <span>4-6 porciones</span>
+                  <span>35 porciones</span>
+                  <span>150 porciones</span>
                 </div>
               </div>
 
@@ -165,60 +165,78 @@
                     <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">1 Piso</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor y 1 Relleno</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">2 Pisos</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor por piso</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">Estructura grande</p>
                     </div>
                   </label>
                 </div>
               </div>
             </div>
 
-            <!-- PASO 2: SABORES Y RELLENOS -->
+            <!-- PASO 2: SABORES Y RELLENOS MENÚ NUEVO -->
             <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
               <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
                 <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">2</span>
-                <h3 class="font-serif font-bold text-lg text-brand-900">Sabores y Rellenos *</h3>
+                <h3 class="font-serif font-bold text-lg text-brand-900">Sabores de Bizcocho y Rellenos *</h3>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-1">Sabor de Pan (Bizcocho) *</label>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Bizcocho (Pan) *</label>
                   <select id="selectPan" onchange="updateSummary()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                    <option value="">-- Selecciona un sabor --</option>
-                    <option value="Vainilla Tradicional">Vainilla Tradicional</option>
-                    <option value="Chocolate Intenso">Chocolate Intenso</option>
+                    <option value="">-- Selecciona sabor de bizcocho --</option>
+                    <option value="Mantequilla">Mantequilla</option>
+                    <option value="Zanahoria">Zanahoria</option>
                     <option value="Red Velvet">Red Velvet</option>
-                    <option value="Zanahoria & Especias">Zanahoria & Especias</option>
-                    <option value="Marmolado">Marmolado (Vainilla/Choc)</option>
+                    <option value="Naranja">Naranja</option>
+                    <option value="Chocolate">Chocolate</option>
+                    <option value="Marmoleado">Marmoleado</option>
+                    <option value="Pink Velvet">Pink Velvet</option>
+                    <option value="Vainilla con Oreo">Vainilla con Oreo</option>
+                    <option value="Chocochips">Chocochips</option>
+                    <option value="Nuez con Canela">Nuez con Canela</option>
                   </select>
                 </div>
 
                 <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-1">Relleno Principal *</label>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Relleno *</label>
                   <select id="selectRelleno" onchange="updateSummary()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                    <option value="">-- Selecciona un relleno --</option>
-                    <option value="Cajeta con Nuez">Cajeta horneada con Nuez</option>
-                    <option value="Crema de Nutella">Crema de Nutella</option>
-                    <option value="Frutos Rojos Silvestres">Frutos Rojos Silvestres</option>
-                    <option value="Queso Crema con Zarzamora">Queso Crema con Zarzamora</option>
-                    <option value="Durazno con Crema Pastelera">Durazno con Crema Pastelera</option>
+                    <option value="">-- Selecciona relleno --</option>
+                    <option value="Betún de Queso Crema con Nutella">Betún de queso crema con Nutella</option>
+                    <option value="Fresas con Crema">Fresas con crema</option>
+                    <option value="Queso Holandés">Queso Holandés</option>
+                    <option value="Piña Coco">Piña Coco</option>
+                    <option value="Cajeta con Nuez">Cajeta con Nuez</option>
+                    <option value="Oreo con Queso Crema">Oreo con queso crema</option>
+                    <option value="Brownie Nutella">Brownie Nutella</option>
+                    <option value="Estilo Marquesita">Estilo Marquesita (Queso Holandés y crema de avellana)</option>
+                    <option value="Frutos Rojos">Frutos Rojos</option>
+                    <option value="Milky Way">Milky Way</option>
+                    <option value="Estilo Ferrero">Estilo Ferrero</option>
+                    <option value="Alemán">Alemán (Cremoso de coco con nuez)</option>
+                    <option value="Moca">Moca</option>
+                    <option value="Brigadeiro Blanco u Oscuro">Brigadeiro blanco u oscuro</option>
+                    <option value="Cheesecake">Cheesecake (Solo 15 y 25 porciones estándar)</option>
                   </select>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- BLOQUE OPCIÓN B: OTROS POSTRES -->
+          <!-- BLOQUE B: OTROS POSTRES -->
           <div id="bloquePostres" class="hidden bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-4">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">1</span>
@@ -246,7 +264,7 @@
             </div>
           </div>
 
-          <!-- PASO 3: ESTILO Y COMPLEMENTOS -->
+          <!-- PASO 3: ESTILO -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">3</span>
@@ -306,7 +324,7 @@
             </div>
           </div>
 
-          <!-- PASO 4: DATOS CLIENTE + BLOQUEO DE DOMINGOS -->
+          <!-- PASO 4: DATOS CLIENTE -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">4</span>
@@ -328,9 +346,7 @@
                 </div>
               </div>
 
-              <div id="imagesPreviewGallery" class="grid grid-cols-3 gap-3 mt-3 hidden">
-                <!-- Se dibuja dinámicamente -->
-              </div>
+              <div id="imagesPreviewGallery" class="grid grid-cols-3 gap-3 mt-3 hidden"></div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -357,7 +373,7 @@
 
         </div>
 
-        <!-- RESUMEN / BOTÓN CONDICIONADO (COL 4) -->
+        <!-- RESUMEN / FICHA TÉCNICA (COL 4) -->
         <div class="lg:col-span-4 sticky top-24">
           <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-md space-y-5">
             <h3 class="font-serif font-bold text-xl text-brand-900 border-b border-gray-100 pb-3 flex items-center justify-between">
@@ -372,10 +388,10 @@
               </div>
               <div id="rowSummaryPorciones" class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Porciones:</span>
-                <span id="sumPorciones" class="font-semibold text-gray-800">20 pers. (1 Piso)</span>
+                <span id="sumPorciones" class="font-semibold text-gray-800">20-25 porciones (1 Piso)</span>
               </div>
               <div id="rowSummaryPan" class="flex justify-between py-1 border-b border-gray-50">
-                <span class="text-gray-500">Sabor Bizcocho:</span>
+                <span class="text-gray-500">Bizcocho:</span>
                 <span id="sumPan" class="font-semibold text-gray-400 italic">Sin seleccionar</span>
               </div>
               <div id="rowSummaryRelleno" class="flex justify-between py-1 border-b border-gray-50">
@@ -415,7 +431,7 @@
     </div>
 
 
-    <!-- VISTA 2: PANEL INTERNO (PRODUCCIÓN & VENTAS CON FILTROS) -->
+    <!-- VISTA 2: PANEL INTERNO -->
     <div id="viewStaff" class="hidden space-y-6">
       
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 pb-4 gap-3">
@@ -434,14 +450,14 @@
         </div>
       </div>
 
-      <!-- BARRA DE BÚSQUEDA Y FILTROS INTERNA -->
+      <!-- BARRA DE BÚSQUEDA Y FILTROS -->
       <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div class="relative w-full sm:w-72">
           <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
           <input type="text" id="staffSearchInput" oninput="renderStaffPanels()" placeholder="Buscar por cliente o folio..." class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
         <div class="flex items-center space-x-2 w-full sm:w-auto justify-end text-xs">
-          <span class="text-gray-500 font-semibold">Filtrar:</span>
+          <span class="text-gray-500 font-semibold">Tipo de Producto:</span>
           <select id="staffFilterType" onchange="renderStaffPanels()" class="border border-gray-200 rounded-xl p-2 focus:outline-none text-xs">
             <option value="todos">Todos los productos</option>
             <option value="pastel">Solo Pasteles</option>
@@ -450,19 +466,17 @@
         </div>
       </div>
 
-      <!-- SECCIÓN A: PANEL DE PRODUCCIÓN -->
+      <!-- SECCIÓN A: PANEL PRODUCCIÓN -->
       <div id="tabProduccion" class="space-y-4">
         <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center justify-between">
-          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos, visualiza las imágenes de referencia y asigna el precio exacto.</span>
+          <span><i class="fas fa-list-check mr-1.5 text-amber-600"></i> <b>Panel de Producción:</b> Revisa los requerimientos, fotos de referencia y asigna el precio exacto.</span>
           <span class="font-bold bg-amber-200 px-2.5 py-1 rounded-full text-[11px]" id="countProduccionPending">0 pendientes</span>
         </div>
 
-        <div id="cardsProduccionContainer" class="grid grid-cols-1 gap-4">
-          <!-- Render dinámico desde JS -->
-        </div>
+        <div id="cardsProduccionContainer" class="grid grid-cols-1 gap-4"></div>
       </div>
 
-      <!-- SECCIÓN B: PANEL DE VENTAS -->
+      <!-- SECCIÓN B: PANEL VENTAS -->
       <div id="tabVentas" class="hidden space-y-8">
         
         <!-- BLOQUE 1: PENDIENTES POR NOTIFICAR -->
@@ -487,22 +501,28 @@
                     <th class="p-3 text-right">Notificación WhatsApp</th>
                   </tr>
                 </thead>
-                <tbody id="tableVentasPending" class="divide-y divide-gray-100 text-xs">
-                  <!-- Render dinámico -->
-                </tbody>
+                <tbody id="tableVentasPending" class="divide-y divide-gray-100 text-xs"></tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- BLOQUE 2: YA NOTIFICADAS -->
+        <!-- BLOQUE 2: YA NOTIFICADAS (CON FILTRO DE FECHA / CALENDARIO) -->
         <div class="space-y-3">
-          <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-emerald-50 border border-emerald-200 p-3 rounded-xl gap-2">
             <div class="flex items-center space-x-2 text-emerald-900 font-bold text-sm">
               <i class="fas fa-check-circle text-emerald-600"></i>
               <span>✅ COTIZACIONES YA NOTIFICADAS</span>
+              <span id="badgeVentasDone" class="bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full text-xs ml-2">0 enviadas</span>
             </div>
-            <span id="badgeVentasDone" class="bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full text-xs">0 enviadas</span>
+            
+            <!-- FILTRO DE CALENDARIO / FECHA -->
+            <div class="flex items-center space-x-2 text-xs bg-white px-3 py-1.5 rounded-xl border border-emerald-200">
+              <i class="fas fa-calendar-alt text-emerald-600"></i>
+              <label for="filterDateNotified" class="font-semibold text-gray-700">Filtrar Evento:</label>
+              <input type="date" id="filterDateNotified" onchange="renderStaffPanels()" class="text-xs border border-gray-200 rounded-lg p-1 focus:outline-none">
+              <button onclick="clearDateFilter()" class="text-gray-400 hover:text-red-500 font-bold text-xs" title="Limpiar filtro de fecha"><i class="fas fa-times"></i></button>
+            </div>
           </div>
 
           <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -512,13 +532,12 @@
                   <tr class="bg-gray-50 border-b border-gray-200 text-[11px] uppercase tracking-wider text-gray-500">
                     <th class="p-3">Folio</th>
                     <th class="p-3">Cliente</th>
-                    <th class="p-3">Precio</th>
+                    <th class="p-3">Fecha Evento</th>
+                    <th class="p-3">Precio Total</th>
                     <th class="p-3">Estatus</th>
                   </tr>
                 </thead>
-                <tbody id="tableVentasDone" class="divide-y divide-gray-100 text-xs">
-                  <!-- Render dinámico -->
-                </tbody>
+                <tbody id="tableVentasDone" class="divide-y divide-gray-100 text-xs"></tbody>
               </table>
             </div>
           </div>
@@ -530,7 +549,7 @@
 
   </main>
 
-  <!-- MODAL BÚSQUEDA / SEGUIMIENTO DE FOLIO (CLIENTE) -->
+  <!-- MODAL BÚSQUEDA DE FOLIO -->
   <div id="modalTracker" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-brand-100 relative space-y-4">
       <button onclick="closeTrackerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
@@ -546,13 +565,11 @@
         <button onclick="searchFolioStatus()" class="bg-brand-700 hover:bg-brand-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">Buscar</button>
       </div>
 
-      <div id="trackerResult" class="hidden bg-cream-50 p-4 rounded-xl border border-brand-100 space-y-2 text-xs">
-        <!-- Render dinámico -->
-      </div>
+      <div id="trackerResult" class="hidden bg-cream-50 p-4 rounded-xl border border-brand-100 space-y-2 text-xs"></div>
     </div>
   </div>
 
-  <!-- MODAL ZOOM DE IMAGEN -->
+  <!-- MODAL ZOOM IMAGEN -->
   <div id="modalImageZoom" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeImageZoom()">
     <div class="max-w-2xl w-full text-center relative" onclick="event.stopPropagation()">
       <img id="imgZoomSrc" src="" class="max-h-[80vh] max-w-full mx-auto rounded-2xl shadow-2xl border-2 border-white">
@@ -560,7 +577,7 @@
     </div>
   </div>
 
-  <!-- MODAL LOGIN CON PIN DE 6 DÍGITOS -->
+  <!-- MODAL LOGIN PIN STAFF -->
   <div id="modalLogin" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-brand-100 relative">
       <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
@@ -581,7 +598,7 @@
     </div>
   </div>
 
-  <!-- PLANTILLA OCULTA PARA GENERAR PDF DE COTIZACIÓN -->
+  <!-- PLANTILLA OCULTA PDF -->
   <div id="pdfTemplate" class="hidden p-8 bg-white text-gray-800 font-sans max-w-xl mx-auto border border-gray-200">
     <div class="flex justify-between items-center border-b pb-4 mb-4">
       <div>
@@ -624,13 +641,14 @@
   </footer>
 
 
-  <!-- JAVASCRIPT INTEGRADO CON FUNCIONES CORREGIDAS -->
+  <!-- JAVASCRIPT INTEGRADO -->
   <script>
     const WHATSAPP_TIENDA = "522741352901"; 
     const PIN_EQUIPO_DB = "201217"; 
     
     let isStaffLoggedIn = false;
-    const PORCIONES_LISTA = [4, 8, 12, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 150];
+    // NUEVA LISTA EXACTA DE PORCIONES
+    const PORCIONES_LISTA = ["4-6", "8-10", "15", "20-25", "35", "50-60", "80", "100", "120", "150"];
     let uploadedImagesList = [];
     let currentFolio = generateFolio();
     let currentQuoteDataForPdf = null;
@@ -639,7 +657,6 @@
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
     }
 
-    // VALIDACIÓN DE DOMINGOS (RESTRICCIÓN)
     function validateSundayDate(e) {
       const inputDate = e.target.value;
       const errorMsg = document.getElementById('sundayErrorMsg');
@@ -648,7 +665,7 @@
       const partes = inputDate.split('-');
       const dayOfWeek = new Date(partes[0], partes[1] - 1, partes[2]).getDay();
 
-      if (dayOfWeek === 0) { // 0 = Domingo
+      if (dayOfWeek === 0) {
         errorMsg.classList.remove('hidden');
         e.target.value = "";
       } else {
@@ -757,14 +774,14 @@
 
       if (tipoProducto === 'pastel') {
         const porcionesIndex = document.getElementById('inputPorciones') ? parseInt(document.getElementById('inputPorciones').value) : 3;
-        const porcionesValor = PORCIONES_LISTA[porcionesIndex] || 20;
+        const porcionesValor = PORCIONES_LISTA[porcionesIndex] || "20-25";
         const pisosRadio = document.querySelector('input[name="pisos"]:checked');
         const pisos = pisosRadio ? pisosRadio.value : "1";
         const pan = document.getElementById('selectPan') ? document.getElementById('selectPan').value : "";
         const relleno = document.getElementById('selectRelleno') ? document.getElementById('selectRelleno').value : "";
 
         document.getElementById('labelPorciones').innerText = porcionesValor;
-        document.getElementById('sumPorciones').innerText = `${porcionesValor} pers. (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
+        document.getElementById('sumPorciones').innerText = `${porcionesValor} porciones (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
         document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
         document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
       } else {
@@ -859,7 +876,6 @@
       updateSummary();
     }
 
-    // FUNCIÓN DE VALIDACIÓN CORREGIDA (CON NOMBRE)
     function validateForm() {
       const tipoProducto = document.querySelector('input[name="tipoProducto"]:checked') ? document.querySelector('input[name="tipoProducto"]:checked').value : 'pastel';
       const nombre = document.getElementById('inputNombre').value.trim();
@@ -898,7 +914,6 @@
       }
     }
 
-    // MANDAR A COTIZAR (SUPABASE)
     async function submitQuoteRequest() {
       const tipoProducto = document.querySelector('input[name="tipoProducto"]:checked').value;
       const nombre = document.getElementById('inputNombre').value.trim();
@@ -906,12 +921,12 @@
       const fecha = document.getElementById('inputFecha').value;
       const notas = document.getElementById('inputNotas').value.trim();
       
-      let porciones = 0, pisos = 0, pan = 'N/A', relleno = 'N/A';
+      let porciones = 'N/A', pisos = 0, pan = 'N/A', relleno = 'N/A';
       let variedadPostre = null, cantidadPiezas = null;
 
       if (tipoProducto === 'pastel') {
         const porcionesIndex = parseInt(document.getElementById('inputPorciones').value);
-        porciones = PORCIONES_LISTA[porcionesIndex] || 20;
+        porciones = PORCIONES_LISTA[porcionesIndex] || "20-25";
         pisos = parseInt(document.querySelector('input[name="pisos"]:checked').value);
         pan = document.getElementById('selectPan').value;
         relleno = document.getElementById('selectRelleno').value;
@@ -927,7 +942,6 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Luces / Velas");
 
-      // Objeto para PDF
       currentQuoteDataForPdf = {
         folio: currentFolio,
         cliente: nombre,
@@ -945,7 +959,6 @@
         notas: notas
       };
 
-      // INSERTAR EN SUPABASE
       const { data, error } = await _supabase
         .from('cotizaciones')
         .insert([{
@@ -982,7 +995,7 @@
       msg += `• *Producto:* ${tipoProducto === 'pastel' ? 'Pastel Personalizado' : 'Otros Postres'}\n`;
       
       if (tipoProducto === 'pastel') {
-        msg += `• *Porciones:* ${porciones} personas (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
+        msg += `• *Porciones:* ${porciones} porciones (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
         msg += `• *Bizcocho:* ${pan}\n`;
         msg += `• *Relleno:* ${relleno}\n`;
       } else {
@@ -1016,9 +1029,7 @@
     }
 
     function handleWhatsAppClick() {
-      setTimeout(() => {
-        resetComplete();
-      }, 500);
+      setTimeout(() => { resetComplete(); }, 500);
     }
 
     function resetComplete() {
@@ -1043,7 +1054,6 @@
       updateSummary();
     }
 
-    // BUSCADOR / SEGUIMIENTO DE FOLIO PARA EL CLIENTE
     async function searchFolioStatus() {
       const folioInput = document.getElementById('trackerInput').value.trim();
       const resultDiv = document.getElementById('trackerResult');
@@ -1078,7 +1088,7 @@
 
       let detalleText = data.tipo_producto === 'postre' 
         ? `${data.variedad_postre} (${data.cantidad_piezas})` 
-        : `${data.porciones} personas - ${data.sabor_pan}`;
+        : `${data.porciones} porciones - ${data.sabor_pan}`;
 
       let precioText = data.precio_final ? `$${data.precio_final} MXN` : 'Pendiente de asignación';
 
@@ -1094,7 +1104,6 @@
       `;
     }
 
-    // GENERAR Y DESCARGAR PDF DE LA COTIZACIÓN
     function downloadPDF() {
       if (!currentQuoteDataForPdf) return;
 
@@ -1118,7 +1127,7 @@
       if (d.tipoProducto === 'postre') {
         detDiv.innerHTML = `<p><b>Postre:</b> ${d.variedadPostre}</p><p><b>Cantidad:</b> ${d.cantidadPiezas}</p>`;
       } else {
-        detDiv.innerHTML = `<p><b>Porciones:</b> ${d.porciones} personas (${d.pisos} pisos)</p><p><b>Bizcocho:</b> ${d.saborPan}</p><p><b>Relleno:</b> ${d.relleno}</p>`;
+        detDiv.innerHTML = `<p><b>Porciones:</b> ${d.porciones} porciones (${d.pisos} pisos)</p><p><b>Bizcocho:</b> ${d.saborPan}</p><p><b>Relleno:</b> ${d.relleno}</p>`;
       }
 
       const element = document.getElementById('pdfTemplate');
@@ -1137,7 +1146,6 @@
       });
     }
 
-    // PANEL STAFF (CON FILTROS Y BÚSQUEDA)
     function switchStaffTab(tab) {
       const tabProd = document.getElementById('tabProduccion');
       const tabVent = document.getElementById('tabVentas');
@@ -1158,6 +1166,12 @@
       renderStaffPanels();
     }
 
+    function clearDateFilter() {
+      const dateInput = document.getElementById('filterDateNotified');
+      if (dateInput) dateInput.value = "";
+      renderStaffPanels();
+    }
+
     async function renderStaffPanels() {
       const { data: cotizaciones, error } = await _supabase
         .from('cotizaciones')
@@ -1171,8 +1185,8 @@
 
       const searchQuery = document.getElementById('staffSearchInput') ? document.getElementById('staffSearchInput').value.toLowerCase().trim() : "";
       const filterType = document.getElementById('staffFilterType') ? document.getElementById('staffFilterType').value : "todos";
+      const filterDate = document.getElementById('filterDateNotified') ? document.getElementById('filterDateNotified').value : "";
 
-      // Aplicar Búsqueda y Filtros
       let filteredData = cotizaciones.filter(item => {
         const matchesSearch = item.cliente_nombre.toLowerCase().includes(searchQuery) || item.folio.toLowerCase().includes(searchQuery);
         const matchesType = filterType === "todos" || item.tipo_producto === filterType;
@@ -1207,8 +1221,8 @@
           if (item.tipo_producto === 'postre') {
             detalleProd = `<p class="text-purple-800 font-bold">🧁 POSTRE: ${item.variedad_postre} (${item.cantidad_piezas})</p>`;
           } else {
-            detalleProd = `<p><b>Porciones:</b> ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
-                           <p><b>Sabor / Relleno:</b> ${item.sabor_pan} / ${item.relleno}</p>`;
+            detalleProd = `<p><b>Porciones:</b> ${item.porciones} porciones (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
+                           <p><b>Bizcocho / Relleno:</b> ${item.sabor_pan} / ${item.relleno}</p>`;
           }
 
           card.innerHTML = `
@@ -1243,7 +1257,7 @@
         });
       }
 
-      // 2. Ventas (Pendientes)
+      // 2. Ventas (Pendientes por notificar)
       const tbodyVentPending = document.getElementById('tableVentasPending');
       tbodyVentPending.innerHTML = "";
       const pendientesVent = filteredData.filter(c => c.estado === 'cotizado_listo');
@@ -1264,8 +1278,8 @@
           if (item.tipo_producto === 'postre') {
             msgCliente += `• *Postre:* ${item.variedad_postre} (${item.cantidad_piezas})\n`;
           } else {
-            msgCliente += `• *Porciones:* ${item.porciones} personas (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
-            msgCliente += `• *Sabor/Relleno:* ${item.sabor_pan} / ${item.relleno}\n`;
+            msgCliente += `• *Porciones:* ${item.porciones} porciones (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
+            msgCliente += `• *Bizcocho/Relleno:* ${item.sabor_pan} / ${item.relleno}\n`;
           }
 
           msgCliente += `• *Estilo:* ${item.estilo}\n\n`;
@@ -1279,7 +1293,7 @@
 
           const waLink = `https://wa.me/52${item.cliente_telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
 
-          let descShort = item.tipo_producto === 'postre' ? `${item.variedad_postre}` : `${item.porciones} pers. - ${item.sabor_pan}`;
+          let descShort = item.tipo_producto === 'postre' ? `${item.variedad_postre}` : `${item.porciones} porciones - ${item.sabor_pan}`;
 
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
@@ -1297,14 +1311,20 @@
         });
       }
 
-      // 3. Ventas (Notificadas)
+      // 3. Ventas (Ya Notificadas - Con Filtro de Fecha)
       const tbodyVentDone = document.getElementById('tableVentasDone');
       tbodyVentDone.innerHTML = "";
-      const notificadasVent = filteredData.filter(c => c.estado === 'notificado_cliente');
+      
+      let notificadasVent = filteredData.filter(c => c.estado === 'notificado_cliente');
+
+      if (filterDate) {
+        notificadasVent = notificadasVent.filter(c => c.fecha_evento === filterDate);
+      }
+
       document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
 
       if (notificadasVent.length === 0) {
-        tbodyVentDone.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Aún no hay cotizaciones notificadas registradas.</td></tr>`;
+        tbodyVentDone.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No hay cotizaciones notificadas para esta fecha.</td></tr>`;
       } else {
         notificadasVent.forEach((item) => {
           const tr = document.createElement('tr');
@@ -1312,6 +1332,7 @@
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
             <td class="p-3 font-semibold">${item.cliente_nombre}</td>
+            <td class="p-3 font-medium text-brand-900">📅 ${item.fecha_evento}</td>
             <td class="p-3 font-bold text-emerald-700">$${item.precio_final} MXN</td>
             <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
           `;
