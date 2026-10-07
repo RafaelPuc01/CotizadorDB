@@ -14,7 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>
-    // CREDENCIALES DE SUPABASE
+    // NUEVAS CREDENCIALES DE SUPABASE
     const SUPABASE_URL = "https://dicbaxqpmrhubjmvwwmq.supabase.co"; 
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY2JheHFwbXJodWJqbXZ3d21xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNDU3MjEsImV4cCI6MjEwNjkyMTcyMX0.Ue4_qc-b6tdrJpyIsXaYdx6t6k0aKnPOTjy4O6Y2Uww"; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -467,7 +467,9 @@
                 <thead>
                   <tr class="bg-gray-50 border-b border-gray-200 text-[11px] uppercase tracking-wider text-gray-500">
                     <th class="p-3">Folio</th>
+                    <th class="p-3">Fotos</th>
                     <th class="p-3">Cliente</th>
+                    <th class="p-3">Detalles del Pedido</th>
                     <th class="p-3">Fecha Evento</th>
                     <th class="p-3">Precio Total</th>
                     <th class="p-3">Estatus</th>
@@ -790,30 +792,35 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Velas de Espiral");
 
-      // Subida de imágenes a Supabase Storage
+      // Intento de subir a Storage con fallback automático a Base64
       let finalPhotoUrls = [];
       if (rawSelectedFiles.length > 0) {
         for (let i = 0; i < rawSelectedFiles.length; i++) {
-          const file = rawSelectedFiles[i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${currentFolio.replace('#DB-', '')}_${Date.now()}_${i}.${fileExt}`;
+          try {
+            const file = rawSelectedFiles[i];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${currentFolio.replace('#DB-', '')}_${Date.now()}_${i}.${fileExt}`;
 
-          const { data: uploadData, error: uploadError } = await _supabase.storage
-            .from('cotizaciones-fotos')
-            .upload(fileName, file, { cacheControl: '3600', upsert: true });
-
-          if (!uploadError) {
-            const { data: publicUrlData } = _supabase.storage
+            const { data: uploadData, error: uploadError } = await _supabase.storage
               .from('cotizaciones-fotos')
-              .getPublicUrl(fileName);
+              .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
-            if (publicUrlData && publicUrlData.publicUrl) {
-              finalPhotoUrls.push(publicUrlData.publicUrl);
+            if (!uploadError) {
+              const { data: publicUrlData } = _supabase.storage
+                .from('cotizaciones-fotos')
+                .getPublicUrl(fileName);
+
+              if (publicUrlData && publicUrlData.publicUrl) {
+                finalPhotoUrls.push(publicUrlData.publicUrl);
+              }
             }
+          } catch (e) {
+            console.warn("Storage no disponible, usando respaldo...", e);
           }
         }
       }
 
+      // Si el bucket no subió las fotos, usa la lista Base64 para NO perder la cotización
       if (finalPhotoUrls.length === 0) {
         finalPhotoUrls = uploadedImagesList;
       }
@@ -838,8 +845,8 @@
         }]);
 
       if (error) {
-        console.error("Error en Supabase:", error);
-        alert("Ocurrió un detalle al guardar en la nube. Revisa que el Bucket 'cotizaciones-fotos' esté creado en Supabase.");
+        console.error("Error técnico al guardar en Supabase:", error);
+        alert(`Ocurrió un error al guardar en la nube: ${error.message || 'Error de conexión o permisos'}`);
         return;
       }
 
@@ -1116,17 +1123,38 @@
       document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
 
       if (notificadasVent.length === 0) {
-        tbodyVentDone.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No hay cotizaciones notificadas para esta fecha.</td></tr>`;
+        tbodyVentDone.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400 italic">No hay cotizaciones notificadas para esta fecha.</td></tr>`;
       } else {
         notificadasVent.forEach((item) => {
           const tr = document.createElement('tr');
-          tr.className = "hover:bg-emerald-50/30 transition";
+          tr.className = "hover:bg-emerald-50/30 transition align-top";
+
+          // Generar fotos pequeñas
+          let fotosHtml = "";
+          if (item.fotos && item.fotos.length > 0) {
+            fotosHtml = `<div class="flex space-x-1">`;
+            item.fotos.forEach(f => {
+              fotosHtml += `<img src="${f}" onclick="openImageZoom('${f}')" class="w-10 h-10 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition shadow-sm">`;
+            });
+            fotosHtml += `</div>`;
+          } else {
+            fotosHtml = `<span class="text-gray-400 text-[10px] italic">Sin fotos</span>`;
+          }
+
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
-            <td class="p-3 font-semibold">${item.cliente_nombre}</td>
-            <td class="p-3 font-medium text-brand-900">📅 ${item.fecha_evento}</td>
-            <td class="p-3 font-bold text-emerald-700">$${item.precio_final} MXN</td>
-            <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✓ Notificado por WhatsApp</span></td>
+            <td class="p-3">${fotosHtml}</td>
+            <td class="p-3 font-semibold text-gray-800">${item.cliente_nombre}<br><span class="text-[10px] text-gray-500 font-normal">${item.cliente_telefono}</span></td>
+            <td class="p-3 text-[11px] leading-relaxed">
+              <b>${item.porciones} porciones</b> (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})<br>
+              <span class="text-gray-600">Pan: ${item.sabor_pan} | Relleno: ${item.relleno}</span><br>
+              <span class="text-gray-500">Estilo: ${item.estilo}</span>
+              ${item.extras && item.extras.length > 0 ? `<br><span class="text-brand-700 font-medium">Extras: ${item.extras.join(', ')}</span>` : ''}
+              ${item.notas ? `<br><span class="text-gray-500 italic">"${item.notas}"</span>` : ''}
+            </td>
+            <td class="p-3 font-medium text-brand-900 whitespace-nowrap">📅 ${item.fecha_evento}</td>
+            <td class="p-3 font-bold text-emerald-700 whitespace-nowrap">$${item.precio_final} MXN</td>
+            <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px] whitespace-nowrap">✓ Notificado</span></td>
           `;
           tbodyVentDone.appendChild(tr);
         });
