@@ -824,7 +824,7 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Velas de Espiral");
 
-      // Subida de imágenes a Supabase Storage
+      // 1. Subida de imágenes a Supabase Storage
       let finalPhotoUrls = [];
       if (rawSelectedFiles.length > 0) {
         for (let i = 0; i < rawSelectedFiles.length; i++) {
@@ -844,6 +844,8 @@
             if (publicUrlData && publicUrlData.publicUrl) {
               finalPhotoUrls.push(publicUrlData.publicUrl);
             }
+          } else {
+            console.warn("Detalle en Storage:", uploadError);
           }
         }
       }
@@ -867,28 +869,31 @@
         notas: notas
       };
 
+      // 2. Inserción a la tabla con diagnósticos de error detallados
+      const payload = {
+        folio: currentFolio,
+        tipo_producto: 'pastel',
+        fecha_evento: fecha,
+        cliente_nombre: nombre,
+        cliente_telefono: tel,
+        porciones: porciones,
+        pisos: pisos,
+        sabor_pan: pan,
+        relleno: relleno,
+        estilo: estilo,
+        extras: extras,
+        notas: notas,
+        fotos: finalPhotoUrls,
+        estado: 'pendiente_produccion'
+      };
+
       const { data, error } = await _supabase
         .from('cotizaciones')
-        .insert([{
-          folio: currentFolio,
-          tipo_producto: 'pastel',
-          fecha_evento: fecha,
-          cliente_nombre: nombre,
-          cliente_telefono: tel,
-          porciones: porciones,
-          pisos: pisos,
-          sabor_pan: pan,
-          relleno: relleno,
-          estilo: estilo,
-          extras: extras,
-          notas: notas,
-          fotos: finalPhotoUrls,
-          estado: 'pendiente_produccion'
-        }]);
+        .insert([payload]);
 
       if (error) {
-        console.error("Error en Supabase:", error);
-        alert("Ocurrió un detalle al guardar en la nube. Revisa que el Bucket 'cotizaciones-fotos' esté creado en Supabase.");
+        console.error("Error detallado de Supabase:", error);
+        alert(`❌ Error al guardar en la tabla: ${error.message || 'Verifica permisos RLS o columnas en Supabase'}`);
         return;
       }
 
