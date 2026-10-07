@@ -802,7 +802,9 @@
             .from('cotizaciones-fotos')
             .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
-          if (!uploadError) {
+          if (uploadError) {
+            console.error(`Error al subir imagen ${i} a Storage:`, uploadError);
+          } else {
             const { data: publicUrlData } = _supabase.storage
               .from('cotizaciones-fotos')
               .getPublicUrl(fileName);
@@ -812,10 +814,6 @@
             }
           }
         }
-      }
-
-      if (finalPhotoUrls.length === 0) {
-        finalPhotoUrls = uploadedImagesList;
       }
 
       const { data, error } = await _supabase
@@ -838,8 +836,8 @@
         }]);
 
       if (error) {
-        console.error("Error en Supabase:", error);
-        alert("Ocurrió un detalle al guardar en la nube. Revisa que el Bucket 'cotizaciones-fotos' esté creado en Supabase.");
+        console.error("Error exacto en la tabla cotizaciones:", error);
+        alert(`Ocurrió un detalle al guardar en Supabase:\n${error.message || JSON.stringify(error)}`);
         return;
       }
 
