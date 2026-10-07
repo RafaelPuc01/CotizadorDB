@@ -14,7 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>
-    // NUEVAS CREDENCIALES DE SUPABASE
+    // CREDENCIALES DE SUPABASE
     const SUPABASE_URL = "https://dicbaxqpmrhubjmvwwmq.supabase.co"; 
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY2JheHFwbXJodWJqbXZ3d21xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNDU3MjEsImV4cCI6MjEwNjkyMTcyMX0.Ue4_qc-b6tdrJpyIsXaYdx6t6k0aKnPOTjy4O6Y2Uww"; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -272,7 +272,7 @@
             </div>
           </div>
 
-          <!-- PASO 4: DATOS CLIENTE -->
+          <!-- PASO 4: DATOS CLIENTE Y HORARIO -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">4</span>
@@ -297,7 +297,7 @@
               <div id="imagesPreviewGallery" class="grid grid-cols-3 gap-3 mt-3 hidden"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Tu Nombre Completo *</label>
                 <input type="text" id="inputNombre" required placeholder="Ej. María López" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -307,9 +307,22 @@
                 <input type="tel" id="inputTel" required placeholder="Ej. 2741234567" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Fecha de Evento (No domingos) *</label>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Fecha de Evento *</label>
                 <input type="date" id="inputFecha" required onchange="validateSundayDate(event)" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                <p id="sundayErrorMsg" class="hidden text-[10px] text-red-600 font-bold mt-1">❌ No laboramos los domingos. Por favor elige otro día.</p>
+                <p id="sundayErrorMsg" class="hidden text-[10px] text-red-600 font-bold mt-1">❌ No laboramos domingos.</p>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Horario Deseado *</label>
+                <select id="selectHorario" required onchange="updateSummary()" class="w-full border border-gray-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  <option value="">-- Horario --</option>
+                  <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                  <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
+                  <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
+                  <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
+                  <option value="3:00 PM - 4:00 PM">3:00 PM - 4:00 PM</option>
+                  <option value="4:00 PM - 5:00 PM">4:00 PM - 5:00 PM</option>
+                  <option value="5:00 PM - 6:00 PM">5:00 PM - 6:00 PM</option>
+                </select>
               </div>
             </div>
 
@@ -349,6 +362,10 @@
               <div class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Estilo:</span>
                 <span id="sumEstilo" class="font-semibold text-gray-800">Sencillo / Clásico</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-gray-50">
+                <span class="text-gray-500">Horario:</span>
+                <span id="sumHorario" class="font-semibold text-gray-400 italic">Sin seleccionar</span>
               </div>
               <div class="flex justify-between py-1 border-b border-gray-50">
                 <span class="text-gray-500">Fotos Referencia:</span>
@@ -470,7 +487,7 @@
                     <th class="p-3">Fotos</th>
                     <th class="p-3">Cliente</th>
                     <th class="p-3">Detalles del Pedido</th>
-                    <th class="p-3">Fecha Evento</th>
+                    <th class="p-3">Fecha y Horario</th>
                     <th class="p-3">Precio Total</th>
                     <th class="p-3">Estatus</th>
                   </tr>
@@ -653,11 +670,13 @@
       const pisos = pisosRadio ? pisosRadio.value : "1";
       const pan = document.getElementById('selectPan') ? document.getElementById('selectPan').value : "";
       const relleno = document.getElementById('selectRelleno') ? document.getElementById('selectRelleno').value : "";
+      const horario = document.getElementById('selectHorario') ? document.getElementById('selectHorario').value : "";
 
       document.getElementById('labelPorciones').innerText = porcionesValor;
       document.getElementById('sumPorciones').innerText = `${porcionesValor} porciones (${pisos} ${pisos > 1 ? 'Pisos' : 'Piso'})`;
       document.getElementById('sumPan').innerHTML = pan ? `<span class="text-gray-800 font-semibold">${pan}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
       document.getElementById('sumRelleno').innerHTML = relleno ? `<span class="text-gray-800 font-semibold">${relleno}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
+      document.getElementById('sumHorario').innerHTML = horario ? `<span class="text-gray-800 font-semibold">${horario}</span>` : `<span class="text-gray-400 italic">Sin seleccionar</span>`;
 
       const estiloRadio = document.querySelector('input[name="estilo"]:checked');
       const estilo = estiloRadio ? estiloRadio.value : "Sencillo / Clásico";
@@ -750,11 +769,12 @@
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
+      const horario = document.getElementById('selectHorario').value;
       const pan = document.getElementById('selectPan').value;
       const relleno = document.getElementById('selectRelleno').value;
       const tieneFotos = uploadedImagesList.length > 0;
 
-      const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && tieneFotos;
+      const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && horario !== "" && tieneFotos;
 
       const btn = document.getElementById('btnMandarCotizar');
       const warning = document.getElementById('validationWarning');
@@ -778,6 +798,7 @@
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
+      const horario = document.getElementById('selectHorario').value;
       const notas = document.getElementById('inputNotas').value.trim();
       
       const porcionesIndex = parseInt(document.getElementById('inputPorciones').value);
@@ -831,6 +852,7 @@
           folio: currentFolio,
           tipo_producto: 'pastel',
           fecha_evento: fecha,
+          horario_entrega: horario,
           cliente_nombre: nombre,
           cliente_telefono: tel,
           porciones: porciones,
@@ -854,7 +876,8 @@
       msg += `----------------------------------------\n`;
       msg += `👤 *Cliente:* ${nombre}\n`;
       msg += `📱 *Teléfono:* ${tel}\n`;
-      msg += `📅 *Fecha Evento:* ${fecha}\n\n`;
+      msg += `📅 *Fecha Evento:* ${fecha}\n`;
+      msg += `⏰ *Horario Entrega:* ${horario}\n\n`;
       msg += `🍰 *ESPECIFICACIONES:*\n`;
       msg += `• *Producto:* Pastel Personalizado\n`;
       msg += `• *Porciones:* ${porciones} porciones (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
@@ -948,7 +971,7 @@
         </div>
         <p><b>Cliente:</b> ${data.cliente_nombre}</p>
         <p><b>Detalle:</b> ${data.porciones} porciones - ${data.sabor_pan}</p>
-        <p><b>Fecha Evento:</b> ${data.fecha_evento}</p>
+        <p><b>Fecha Evento:</b> ${data.fecha_evento} (${data.horario_entrega || 'Por definir'})</p>
         <p class="font-bold text-sm text-brand-900 mt-1">Precio Estimado: ${precioText}</p>
       `;
     }
@@ -1044,6 +1067,7 @@
                 <p><b>Porciones:</b> ${item.porciones} porciones (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})</p>
                 <p><b>Bizcocho / Relleno:</b> ${item.sabor_pan} / ${item.relleno}</p>
                 <p><b>Estilo:</b> ${item.estilo}</p>
+                <p><b>Horario:</b> ⏰ ${item.horario_entrega || 'Por definir'}</p>
                 ${item.extras && item.extras.length > 0 ? `<p><b>Extras:</b> ${item.extras.join(', ')}</p>` : ''}
                 ${item.notas ? `<p class="text-gray-600 italic">"${item.notas}"</p>` : ''}
               </div>
@@ -1087,6 +1111,7 @@
           msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precio_final} MXN*\n\n`;
           msgCliente += `----------------------------------------\n`;
           msgCliente += `📅 *FECHA DE TU EVENTO:* ${item.fecha_evento}\n`;
+          msgCliente += `⏰ *HORARIO:* ${item.horario_entrega || 'Por definir'}\n`;
           msgCliente += `⚠️ *FECHA LÍMITE DE CONFIRMACIÓN:* ${fechaLimiteStr} (Sujeto a disponibilidad en agenda)\n`;
           msgCliente += `----------------------------------------\n\n`;
           msgCliente += `Para reservar tu fecha requerimos un anticipo del 50%.\n`;
@@ -1097,7 +1122,7 @@
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
             <td class="p-3 font-semibold">${item.cliente_nombre}<br><span class="text-[10px] text-gray-500 font-normal">${item.cliente_telefono}</span></td>
-            <td class="p-3 text-[11px]">${item.porciones} porciones - ${item.sabor_pan}</td>
+            <td class="p-3 text-[11px]">${item.porciones} porciones - ${item.sabor_pan}<br><span class="text-gray-500">⏰ ${item.horario_entrega || 'Por definir'}</span></td>
             <td class="p-3 font-extrabold text-emerald-700 text-sm">$${item.precio_final} MXN</td>
             <td class="p-3 text-right">
               <a href="${waLink}" target="_blank" onclick="markAsNotified('${item.id}')" class="inline-flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
@@ -1152,7 +1177,7 @@
               ${item.extras && item.extras.length > 0 ? `<br><span class="text-brand-700 font-medium">Extras: ${item.extras.join(', ')}</span>` : ''}
               ${item.notas ? `<br><span class="text-gray-500 italic">"${item.notas}"</span>` : ''}
             </td>
-            <td class="p-3 font-medium text-brand-900 whitespace-nowrap">📅 ${item.fecha_evento}</td>
+            <td class="p-3 font-medium text-brand-900 whitespace-nowrap">📅 ${item.fecha_evento}<br><span class="text-xs text-gray-600">⏰ ${item.horario_entrega || 'Por definir'}</span></td>
             <td class="p-3 font-bold text-emerald-700 whitespace-nowrap">$${item.precio_final} MXN</td>
             <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px] whitespace-nowrap">✓ Notificado</span></td>
           `;
