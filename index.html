@@ -4,20 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dulce Bocado - Cotizador & Sistema de Gestión</title>
-  <!-- Tailwind CSS CDN -->
+  
+  <!-- CONEXIONES PREVIAS RÁPIDAS (DNS PREFETCH) -->
+  <link rel="preconnect" href="https://dicbaxqpmrhubjmvwwmq.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- TAILWIND CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
+  
+  <!-- FONTAWESOME Y GOOGLE FONTS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- SUPABASE JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   
   <script>
     // CREDENCIALES DE SUPABASE
     const SUPABASE_URL = "https://dicbaxqpmrhubjmvwwmq.supabase.co"; 
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY2JheHFwbXJodWJqbXZ3d21xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNDU3MjEsImV4cCI6MjEwNjkyMTcyMX0.Ue4_qc-b6tdrJpyIsXaYdx6t6k0aKnPOTjy4O6Y2Uww"; 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let _supabase;
 
     tailwind.config = {
       theme: {
@@ -564,8 +572,7 @@
     </div>
   </footer>
 
-
-  <!-- JAVASCRIPT INTEGRADO -->
+  <!-- JAVASCRIPT INTEGRADO OPTIMIZADO -->
   <script>
     const WHATSAPP_TIENDA = "522741686392"; 
     const PIN_EQUIPO_DB = "201217"; 
@@ -579,8 +586,57 @@
     let cachedCotizaciones = null;
     let lastFetchTime = 0;
 
+    function getSupabaseClient() {
+      if (!_supabase && typeof supabase !== 'undefined') {
+        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      return _supabase;
+    }
+
     function generateFolio() {
       return '#DB-' + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function compressImage(file, maxWidth = 800, quality = 0.6) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve({ file: compressedFile, dataUrl: dataUrl });
+              } else {
+                reject(new Error("Error al comprimir"));
+              }
+            }, 'image/jpeg', quality);
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
     }
 
     function validateSundayDate(e) {
@@ -690,7 +746,7 @@
       validateForm();
     }
 
-    function handleMultipleImagesUpload(event) {
+    async function handleMultipleImagesUpload(event) {
       const files = Array.from(event.target.files);
       if (!files || files.length === 0) return;
 
@@ -702,23 +758,19 @@
       }
 
       const filesToProcess = files.slice(0, espacioDisponible);
-      let processedCount = 0;
 
-      filesToProcess.forEach(file => {
-        rawSelectedFiles.push(file);
+      for (const file of filesToProcess) {
+        try {
+          const compressed = await compressImage(file, 800, 0.6);
+          rawSelectedFiles.push(compressed.file);
+          uploadedImagesList.push(compressed.dataUrl);
+        } catch (e) {
+          console.error("Error al optimizar imagen:", e);
+        }
+      }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          uploadedImagesList.push(e.target.result);
-          processedCount++;
-          if (processedCount === filesToProcess.length) {
-            renderImageGallery();
-            updateSummary();
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-
+      renderImageGallery();
+      updateSummary();
       event.target.value = "";
     }
 
@@ -795,6 +847,11 @@
     }
 
     async function submitQuoteRequest() {
+      const client = getSupabaseClient();
+      const btn = document.getElementById('btnMandarCotizar');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fas fa-spinner fa-spin text-base"></i><span>Enviando cotización...</span>`;
+
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
       const fecha = document.getElementById('inputFecha').value;
@@ -813,21 +870,19 @@
       if (document.getElementById('extraFlores').checked) extras.push("Flores Naturales");
       if (document.getElementById('extraLuz').checked) extras.push("Velas de Espiral");
 
-      // Intento de subir a Storage con fallback automático a Base64
       let finalPhotoUrls = [];
-      if (rawSelectedFiles.length > 0) {
+      if (rawSelectedFiles.length > 0 && client) {
         for (let i = 0; i < rawSelectedFiles.length; i++) {
           try {
             const file = rawSelectedFiles[i];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${currentFolio.replace('#DB-', '')}_${Date.now()}_${i}.${fileExt}`;
+            const fileName = `${currentFolio.replace('#DB-', '')}_${Date.now()}_${i}.jpg`;
 
-            const { data: uploadData, error: uploadError } = await _supabase.storage
+            const { data: uploadData, error: uploadError } = await client.storage
               .from('cotizaciones-fotos')
               .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
             if (!uploadError) {
-              const { data: publicUrlData } = _supabase.storage
+              const { data: publicUrlData } = client.storage
                 .from('cotizaciones-fotos')
                 .getPublicUrl(fileName);
 
@@ -836,17 +891,22 @@
               }
             }
           } catch (e) {
-            console.warn("Storage no disponible, usando respaldo...", e);
+            console.warn("Storage diferido, usando copia ligera...", e);
           }
         }
       }
 
-      // Si el bucket no subió las fotos, usa la lista Base64 para NO perder la cotización
       if (finalPhotoUrls.length === 0) {
         finalPhotoUrls = uploadedImagesList;
       }
 
-      const { data, error } = await _supabase
+      if (!client) {
+        alert("Error de conexión con la base de datos. Por favor recarga e intenta de nuevo.");
+        validateForm();
+        return;
+      }
+
+      const { data, error } = await client
         .from('cotizaciones')
         .insert([{
           folio: currentFolio,
@@ -867,8 +927,9 @@
         }]);
 
       if (error) {
-        console.error("Error técnico al guardar en Supabase:", error);
-        alert(`Ocurrió un error al guardar en la nube: ${error.message || 'Error de conexión o permisos'}`);
+        console.error("Error al guardar en Supabase:", error);
+        alert(`Ocurrió un detalle de red: ${error.message || 'Error de conexión'}`);
+        validateForm();
         return;
       }
 
@@ -931,6 +992,7 @@
     }
 
     async function searchFolioStatus() {
+      const client = getSupabaseClient();
       const folioInput = document.getElementById('trackerInput').value.trim();
       const resultDiv = document.getElementById('trackerResult');
 
@@ -942,7 +1004,9 @@
       resultDiv.innerHTML = `<p class="text-center text-gray-500">Buscando folio ${folioInput}...</p>`;
       resultDiv.classList.remove('hidden');
 
-      const { data, error } = await _supabase
+      if (!client) return;
+
+      const { data, error } = await client
         .from('cotizaciones')
         .select('*')
         .eq('folio', folioInput.toUpperCase())
@@ -1003,12 +1067,15 @@
     }
 
     async function fetchCotizaciones(forceRefresh = false) {
+      const client = getSupabaseClient();
+      if (!client) return [];
+      
       const now = Date.now();
       if (!forceRefresh && cachedCotizaciones && (now - lastFetchTime < 15000)) {
         return cachedCotizaciones;
       }
 
-      const { data: cotizaciones, error } = await _supabase
+      const { data: cotizaciones, error } = await client
         .from('cotizaciones')
         .select('*')
         .order('created_at', { ascending: false })
@@ -1154,7 +1221,6 @@
           const tr = document.createElement('tr');
           tr.className = "hover:bg-emerald-50/30 transition align-top";
 
-          // Generar fotos pequeñas
           let fotosHtml = "";
           if (item.fotos && item.fotos.length > 0) {
             fotosHtml = `<div class="flex space-x-1">`;
@@ -1187,13 +1253,16 @@
     }
 
     async function saveProductionPrice(id, folio) {
+      const client = getSupabaseClient();
+      if (!client) return;
+
       const priceVal = document.getElementById(`prodPrice_${id}`).value;
       if (!priceVal || priceVal <= 0) {
         alert("Por favor ingresa un precio válido asignado por producción.");
         return;
       }
 
-      const { error } = await _supabase
+      const { error } = await client
         .from('cotizaciones')
         .update({
           precio_final: parseFloat(priceVal),
@@ -1212,7 +1281,10 @@
     }
 
     async function markAsNotified(id) {
-      const { error } = await _supabase
+      const client = getSupabaseClient();
+      if (!client) return;
+
+      const { error } = await client
         .from('cotizaciones')
         .update({ estado: 'notificado_cliente' })
         .eq('id', id);
