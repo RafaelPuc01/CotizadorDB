@@ -12,6 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- html2pdf.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <script>
     // CREDENCIALES DE SUPABASE
@@ -534,6 +536,37 @@
     </div>
   </div>
 
+  <!-- PLANTILLA OCULTA PDF -->
+  <div id="pdfTemplate" class="hidden p-8 bg-white text-gray-800 font-sans max-w-xl mx-auto border border-gray-200">
+    <div class="flex justify-between items-center border-b pb-4 mb-4">
+      <div>
+        <h2 class="font-serif text-2xl font-bold text-brand-900">Dulce Bocado</h2>
+        <p class="text-xs text-gray-500">Repostería Artesanal • Tierra Blanca, Ver.</p>
+      </div>
+      <div class="text-right">
+        <span id="pdfFolio" class="font-mono font-bold text-lg text-brand-700">#DB-0000</span>
+        <p id="pdfFecha" class="text-xs text-gray-400"></p>
+      </div>
+    </div>
+
+    <div class="space-y-3 text-xs mb-6">
+      <p><b>Cliente:</b> <span id="pdfCliente"></span></p>
+      <p><b>Teléfono:</b> <span id="pdfTel"></span></p>
+      <p><b>Fecha de Evento:</b> <span id="pdfFechaEvento" class="font-bold text-brand-800"></span></p>
+      <hr>
+      <div id="pdfDetalles" class="space-y-1"></div>
+      <p><b>Estilo:</b> <span id="pdfEstilo"></span></p>
+      <p><b>Extras:</b> <span id="pdfExtras"></span></p>
+      <p id="pdfNotasContainer"><b>Notas:</b> <span id="pdfNotas"></span></p>
+    </div>
+
+    <div class="bg-cream-50 p-4 rounded-xl border border-brand-100 text-center space-y-1">
+      <p class="text-xs text-gray-500">PRECIO ESTIMADO TOTAL</p>
+      <p id="pdfPrecio" class="text-2xl font-extrabold text-emerald-700">$0.00 MXN</p>
+      <p class="text-[10px] text-amber-800 mt-1">⚠️ Anticipo del 50% requerido para agendar fecha.</p>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer class="bg-white border-t border-brand-100 mt-12 py-6 text-center text-xs text-gray-500">
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
@@ -556,6 +589,7 @@
     let uploadedImagesList = [];
     let rawSelectedFiles = [];
     let currentFolio = generateFolio();
+    let currentQuoteDataForPdf = null;
 
     let cachedCotizaciones = null;
     let lastFetchTime = 0;
@@ -802,9 +836,7 @@
             .from('cotizaciones-fotos')
             .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
-          if (uploadError) {
-            console.error(`Error al subir imagen ${i} a Storage:`, uploadError);
-          } else {
+          if (!uploadError) {
             const { data: publicUrlData } = _supabase.storage
               .from('cotizaciones-fotos')
               .getPublicUrl(fileName);
@@ -815,6 +847,25 @@
           }
         }
       }
+
+      if (finalPhotoUrls.length === 0) {
+        finalPhotoUrls = uploadedImagesList;
+      }
+
+      currentQuoteDataForPdf = {
+        folio: currentFolio,
+        cliente: nombre,
+        telefono: tel,
+        fechaEvento: fecha,
+        tipoProducto: 'pastel',
+        porciones: porciones,
+        pisos: pisos,
+        saborPan: pan,
+        relleno: relleno,
+        estilo: estilo,
+        extras: extras,
+        notas: notas
+      };
 
       const { data, error } = await _supabase
         .from('cotizaciones')
@@ -836,8 +887,8 @@
         }]);
 
       if (error) {
-        console.error("Error exacto en la tabla cotizaciones:", error);
-        alert(`Ocurrió un detalle al guardar en Supabase:\n${error.message || JSON.stringify(error)}`);
+        console.error("Error en Supabase:", error);
+        alert("Ocurrió un detalle al guardar en la nube. Revisa que el Bucket 'cotizaciones-fotos' esté creado en Supabase.");
         return;
       }
 
@@ -862,14 +913,18 @@
 
       const container = document.getElementById('directWaContainer');
       container.innerHTML = `
-        <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
+        <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
           <i class="fab fa-whatsapp text-lg"></i>
           <span>Confirmar Envío por WhatsApp (${currentFolio})</span>
         </a>
+        <button type="button" onclick="downloadPDF()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center space-x-1 border transition">
+          <i class="fas fa-file-pdf text-red-600"></i>
+          <span>Descargar Ficha en PDF</span>
+        </button>
       `;
       container.classList.remove('hidden');
 
-      alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar los detalles por WhatsApp.`);
+      alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar a WhatsApp o descarga tu Ficha en PDF.`);
     }
 
     function handleWhatsAppClick() {
@@ -942,6 +997,44 @@
         <p><b>Fecha Evento:</b> ${data.fecha_evento}</p>
         <p class="font-bold text-sm text-brand-900 mt-1">Precio Estimado: ${precioText}</p>
       `;
+    }
+
+    function downloadPDF() {
+      if (!currentQuoteDataForPdf) return;
+
+      const d = currentQuoteDataForPdf;
+      document.getElementById('pdfFolio').innerText = d.folio;
+      document.getElementById('pdfFecha').innerText = new Date().toLocaleDateString('es-MX');
+      document.getElementById('pdfCliente').innerText = d.cliente;
+      document.getElementById('pdfTel').innerText = d.telefono;
+      document.getElementById('pdfFechaEvento').innerText = d.fechaEvento;
+      document.getElementById('pdfEstilo').innerText = d.estilo;
+      document.getElementById('pdfExtras').innerText = d.extras.length > 0 ? d.extras.join(', ') : 'Ninguno';
+      
+      if (d.notas) {
+        document.getElementById('pdfNotasContainer').classList.remove('hidden');
+        document.getElementById('pdfNotas').innerText = d.notas;
+      } else {
+        document.getElementById('pdfNotasContainer').classList.add('hidden');
+      }
+
+      const detDiv = document.getElementById('pdfDetalles');
+      detDiv.innerHTML = `<p><b>Porciones:</b> ${d.porciones} porciones (${d.pisos} pisos)</p><p><b>Bizcocho:</b> ${d.saborPan}</p><p><b>Relleno:</b> ${d.relleno}</p>`;
+
+      const element = document.getElementById('pdfTemplate');
+      element.classList.remove('hidden');
+
+      const opt = {
+        margin:       0.5,
+        filename:     `Cotizacion_${d.folio}_DulceBocado.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.classList.add('hidden');
+      });
     }
 
     function switchStaffTab(tab) {
