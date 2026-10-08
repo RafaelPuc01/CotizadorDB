@@ -78,7 +78,7 @@
       <div class="flex items-center space-x-2">
         <button onclick="openTrackerModal()" class="flex items-center space-x-1 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full border border-brand-200 transition">
           <i class="fas fa-search text-brand-600"></i>
-          <span class="hidden sm:inline">Consultar Folio</span>
+          <span class="hidden sm:inline">Consultar / Editar Folio</span>
         </button>
 
         <a href="https://wa.me/522741686392" target="_blank" class="hidden md:flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition border border-emerald-200 font-medium">
@@ -108,9 +108,15 @@
     <!-- VISTA 1: CLIENTE (COTIZADOR) -->
     <div id="viewCustomer" class="block">
       <div class="mb-8 text-center max-w-2xl mx-auto">
-        <span class="text-brand-600 text-xs font-extrabold uppercase tracking-widest bg-brand-100 px-3 py-1 rounded-full">Solicitud de Cotización</span>
-        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-900 mt-2">Cotiza tu Pastel Personalizado</h2>
+        <span class="text-brand-600 text-xs font-extrabold uppercase tracking-widest bg-brand-100 px-3 py-1 rounded-full" id="badgeFormTitle">Solicitud de Cotización</span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-900 mt-2" id="headingFormTitle">Cotiza tu Pastel Personalizado</h2>
         <p class="text-gray-600 text-sm mt-2">Completa <b>todos los campos obligatorios (*)</b> para enviar tu solicitud al equipo de Producción y Tienda.</p>
+        
+        <!-- BANNER DE MODO EDICIÓN -->
+        <div id="bannerEditMode" class="hidden mt-3 bg-amber-100 border border-amber-300 text-amber-900 px-4 py-2 rounded-xl text-xs flex justify-between items-center shadow-sm">
+          <span>✏️ <b>Modo Edición Activado:</b> Modificando la cotización <b id="editingFolioLabel">#DB-0000</b>.</span>
+          <button type="button" onclick="cancelEditMode()" class="text-amber-900 font-bold underline hover:text-red-600 ml-2">Cancelar Edición</button>
+        </div>
       </div>
 
       <form id="quoteForm" oninput="validateForm()" onchange="validateForm()" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -149,21 +155,21 @@
                     <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">1 Piso</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">Pastel Clasico</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor y 1 Relleno</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">2 Pisos</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">+ de 35 Porciones</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor por piso</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">+ de 60 Porciones</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">Estructura grande</p>
                     </div>
                   </label>
                 </div>
@@ -389,7 +395,7 @@
             <button type="button" id="btnMandarCotizar" disabled onclick="submitQuoteRequest()" 
               class="w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
               <i class="fas fa-paper-plane text-base"></i>
-              <span>Mandar a Producción</span>
+              <span id="btnTextSubmit">Mandar a Producción</span>
             </button>
 
             <div id="directWaContainer" class="hidden space-y-2"></div>
@@ -528,7 +534,7 @@
         <button onclick="searchFolioStatus()" class="bg-brand-700 hover:bg-brand-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">Buscar</button>
       </div>
 
-      <div id="trackerResult" class="hidden bg-cream-50 p-4 rounded-xl border border-brand-100 space-y-2 text-xs"></div>
+      <div id="trackerResult" class="hidden bg-cream-50 p-4 rounded-xl border border-brand-100 space-y-3 text-xs"></div>
     </div>
   </div>
 
@@ -572,7 +578,7 @@
     </div>
   </footer>
 
-  <!-- JAVASCRIPT INTEGRADO OPTIMIZADO -->
+  <!-- JAVASCRIPT INTEGRADO OPTIMIZADO CON EDICIÓN DE SOLICITUDES -->
   <script>
     const WHATSAPP_TIENDA = "522741686392"; 
     const PIN_EQUIPO_DB = "201217"; 
@@ -582,6 +588,11 @@
     let uploadedImagesList = [];
     let rawSelectedFiles = [];
     let currentFolio = generateFolio();
+
+    // MODO EDICIÓN
+    let isEditingMode = false;
+    let editingRecordId = null;
+    let cachedCurrentRecord = null;
 
     let cachedCotizaciones = null;
     let lastFetchTime = 0;
@@ -829,18 +840,19 @@
       const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && horario !== "" && tieneFotos;
 
       const btn = document.getElementById('btnMandarCotizar');
+      const btnText = document.getElementById('btnTextSubmit');
       const warning = document.getElementById('validationWarning');
 
       if (isValid) {
         btn.disabled = false;
         btn.className = "w-full bg-brand-700 hover:bg-brand-800 text-white cursor-pointer font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm";
-        btn.innerHTML = `<i class="fas fa-paper-plane text-base"></i><span>Mandar a Producción</span>`;
+        btnText.innerText = isEditingMode ? `Actualizar Cotización (${currentFolio})` : "Mandar a Producción";
         warning.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800 font-medium";
         warning.innerHTML = `<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Todos los campos requeridos están listos!`;
       } else {
         btn.disabled = true;
         btn.className = "w-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm";
-        btn.innerHTML = `<i class="fas fa-paper-plane text-base"></i><span>Mandar a Producción</span>`;
+        btnText.innerText = isEditingMode ? `Actualizar Cotización (${currentFolio})` : "Mandar a Producción";
         warning.className = "bg-amber-50 border border-amber-200 rounded-xl p-3 text-center text-xs text-amber-800";
         warning.innerHTML = `<i class="fas fa-exclamation-circle text-amber-600 mr-1"></i> Falta completar campos requeridos (*)`;
       }
@@ -849,8 +861,10 @@
     async function submitQuoteRequest() {
       const client = getSupabaseClient();
       const btn = document.getElementById('btnMandarCotizar');
+      const btnText = document.getElementById('btnTextSubmit');
+      
       btn.disabled = true;
-      btn.innerHTML = `<i class="fas fa-spinner fa-spin text-base"></i><span>Enviando cotización...</span>`;
+      btnText.innerText = isEditingMode ? "Actualizando datos..." : "Enviando cotización...";
 
       const nombre = document.getElementById('inputNombre').value.trim();
       const tel = document.getElementById('inputTel').value.trim();
@@ -906,25 +920,40 @@
         return;
       }
 
-      const { data, error } = await client
-        .from('cotizaciones')
-        .insert([{
-          folio: currentFolio,
-          tipo_producto: 'pastel',
-          fecha_evento: fecha,
-          horario_entrega: horario,
-          cliente_nombre: nombre,
-          cliente_telefono: tel,
-          porciones: porciones,
-          pisos: pisos,
-          sabor_pan: pan,
-          relleno: relleno,
-          estilo: estilo,
-          extras: extras,
-          notas: notas,
-          fotos: finalPhotoUrls,
-          estado: 'pendiente_produccion'
-        }]);
+      const payload = {
+        folio: currentFolio,
+        tipo_producto: 'pastel',
+        fecha_evento: fecha,
+        horario_entrega: horario,
+        cliente_nombre: nombre,
+        cliente_telefono: tel,
+        porciones: porciones,
+        pisos: pisos,
+        sabor_pan: pan,
+        relleno: relleno,
+        estilo: estilo,
+        extras: extras,
+        notas: notas,
+        fotos: finalPhotoUrls,
+        estado: 'pendiente_produccion'
+      };
+
+      let error = null;
+
+      if (isEditingMode && editingRecordId) {
+        // MODO EDICIÓN -> UPDATE
+        const res = await client
+          .from('cotizaciones')
+          .update(payload)
+          .eq('id', editingRecordId);
+        error = res.error;
+      } else {
+        // MODO NUEVO -> INSERT
+        const res = await client
+          .from('cotizaciones')
+          .insert([payload]);
+        error = res.error;
+      }
 
       if (error) {
         console.error("Error al guardar en Supabase:", error);
@@ -933,13 +962,15 @@
         return;
       }
 
-      let msg = `🎂 *NUEVA SOLICITUD DE COTIZACIÓN ${currentFolio}*\n`;
+      let msg = isEditingMode 
+        ? `✏️ *SOLICITUD DE COTIZACIÓN ACTUALIZADA ${currentFolio}*\n`
+        : `🎂 *NUEVA SOLICITUD DE COTIZACIÓN ${currentFolio}*\n`;
       msg += `----------------------------------------\n`;
       msg += `👤 *Cliente:* ${nombre}\n`;
       msg += `📱 *Teléfono:* ${tel}\n`;
       msg += `📅 *Fecha Evento:* ${fecha}\n`;
       msg += `⏰ *Horario Entrega:* ${horario}\n\n`;
-      msg += `🍰 *ESPECIFICACIONES:*\n`;
+      msg += `🍰 *ESPECIFICACIONES ACTUALIZADAS:*\n`;
       msg += `• *Producto:* Pastel Personalizado\n`;
       msg += `• *Porciones:* ${porciones} porciones (${pisos} ${pisos > 1 ? 'pisos' : 'piso'})\n`;
       msg += `• *Bizcocho:* ${pan}\n`;
@@ -949,7 +980,7 @@
       msg += `• *Extras:* ${extras.length > 0 ? extras.join(', ') : 'Ninguno'}\n`;
       if (notas) msg += `• *Notas:* ${notas}\n`;
       msg += `----------------------------------------\n`;
-      msg += `📌 *Enviado a lista de Producción y Tienda.*`;
+      msg += `📌 *Actualización enviada a Producción y Tienda.*`;
 
       const urlWa = `https://wa.me/${WHATSAPP_TIENDA}?text=${encodeURIComponent(msg)}`;
 
@@ -957,12 +988,12 @@
       container.innerHTML = `
         <a href="${urlWa}" target="_blank" onclick="handleWhatsAppClick()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-3 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg animate-pulse">
           <i class="fab fa-whatsapp text-lg"></i>
-          <span>Confirmar Envío por WhatsApp (${currentFolio})</span>
+          <span>${isEditingMode ? 'Confirmar Cambios por WhatsApp' : 'Confirmar Envío por WhatsApp'} (${currentFolio})</span>
         </a>
       `;
       container.classList.remove('hidden');
 
-      alert(`✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar a WhatsApp.`);
+      alert(isEditingMode ? `✅ ¡Cotización ${currentFolio} actualizada con éxito!` : `✅ ¡Solicitud ${currentFolio} registrada!\n\nHaz clic en el botón verde para enviar a WhatsApp.`);
     }
 
     function handleWhatsAppClick() {
@@ -983,11 +1014,82 @@
         container.classList.add('hidden');
       }
 
+      cancelEditMode();
       currentFolio = generateFolio();
       const folioEl = document.getElementById('summaryFolio');
       if (folioEl) {
         folioEl.innerText = currentFolio;
       }
+      updateSummary();
+    }
+
+    // CARGAR Y EDITAR UNA SOLICITUD EXISTENTE
+    function prepareEditQuote(record) {
+      cachedCurrentRecord = record;
+      isEditingMode = true;
+      editingRecordId = record.id;
+      currentFolio = record.folio;
+
+      // Actualizar UI para Modo Edición
+      document.getElementById('summaryFolio').innerText = currentFolio;
+      document.getElementById('badgeFormTitle').innerText = "Modificando Solicitud";
+      document.getElementById('badgeFormTitle').className = "text-amber-700 text-xs font-extrabold uppercase tracking-widest bg-amber-100 px-3 py-1 rounded-full";
+      document.getElementById('headingFormTitle').innerText = `Editar Cotización ${currentFolio}`;
+      document.getElementById('editingFolioLabel').innerText = currentFolio;
+      document.getElementById('bannerEditMode').classList.remove('hidden');
+
+      // Llenar campos con los datos existentes
+      document.getElementById('inputNombre').value = record.cliente_nombre || "";
+      document.getElementById('inputTel').value = record.cliente_telefono || "";
+      document.getElementById('inputFecha').value = record.fecha_evento || "";
+      document.getElementById('selectHorario').value = record.horario_entrega || "";
+      document.getElementById('selectPan').value = record.sabor_pan || "";
+      document.getElementById('selectRelleno').value = record.relleno || "";
+      document.getElementById('inputNotas').value = record.notas || "";
+
+      // Porciones
+      const indexPorcion = PORCIONES_LISTA.indexOf(record.porciones);
+      if (indexPorcion !== -1) {
+        document.getElementById('inputPorciones').value = indexPorcion;
+      }
+
+      // Pisos
+      const pisosRadio = document.querySelector(`input[name="pisos"][value="${record.pisos || 1}"]`);
+      if (pisosRadio) pisosRadio.checked = true;
+
+      // Estilo
+      const estiloRadio = document.querySelector(`input[name="estilo"][value="${record.estilo || 'Sencillo / Clásico'}"]`);
+      if (estiloRadio) estiloRadio.checked = true;
+
+      // Extras
+      document.getElementById('extraTopper').checked = record.extras ? record.extras.includes("Figuras de Fondant") : false;
+      document.getElementById('extraFlores').checked = record.extras ? record.extras.includes("Flores Naturales") : false;
+      document.getElementById('extraLuz').checked = record.extras ? record.extras.includes("Velas de Espiral") : false;
+
+      // Cargar Fotos
+      uploadedImagesList = record.fotos || [];
+      rawSelectedFiles = [];
+      renderImageGallery();
+
+      closeTrackerModal();
+      updateSummary();
+
+      // Scroll suave al inicio del formulario
+      document.getElementById('viewCustomer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEditMode() {
+      isEditingMode = false;
+      editingRecordId = null;
+      cachedCurrentRecord = null;
+
+      document.getElementById('badgeFormTitle').innerText = "Solicitud de Cotización";
+      document.getElementById('badgeFormTitle').className = "text-brand-600 text-xs font-extrabold uppercase tracking-widest bg-brand-100 px-3 py-1 rounded-full";
+      document.getElementById('headingFormTitle').innerText = "Cotiza tu Pastel Personalizado";
+      document.getElementById('bannerEditMode').classList.add('hidden');
+
+      currentFolio = generateFolio();
+      document.getElementById('summaryFolio').innerText = currentFolio;
       updateSummary();
     }
 
@@ -1018,8 +1120,11 @@
       }
 
       let statusBadge = "";
+      let canEdit = false;
+
       if (data.estado === 'pendiente_produccion') {
         statusBadge = `<span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-[10px]">⏳ En revisión por Producción</span>`;
+        canEdit = true;
       } else if (data.estado === 'cotizado_listo') {
         statusBadge = `<span class="bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-full text-[10px]">✨ Cotizado - Listo para agendar</span>`;
       } else {
@@ -1027,6 +1132,8 @@
       }
 
       let precioText = data.precio_final ? `$${data.precio_final} MXN` : 'Pendiente de asignación';
+
+      window._currentRecordFound = data;
 
       resultDiv.innerHTML = `
         <div class="flex justify-between items-center border-b pb-2">
@@ -1037,6 +1144,15 @@
         <p><b>Detalle:</b> ${data.porciones} porciones - ${data.sabor_pan}</p>
         <p><b>Fecha Evento:</b> ${data.fecha_evento} (${data.horario_entrega || 'Por definir'})</p>
         <p class="font-bold text-sm text-brand-900 mt-1">Precio Estimado: ${precioText}</p>
+        
+        ${canEdit ? `
+          <button onclick="prepareEditQuote(window._currentRecordFound)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-3 rounded-xl transition text-xs mt-2 flex items-center justify-center space-x-1.5">
+            <i class="fas fa-edit"></i>
+            <span>Modificar / Actualizar esta Solicitud</span>
+          </button>
+        ` : `
+          <p class="text-[11px] text-gray-500 italic mt-1">⚠️ Esta solicitud ya fue cotizada por Producción. Si requieres cambios, por favor contacta directamente a la tienda por WhatsApp.</p>
+        `}
       `;
     }
 
