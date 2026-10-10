@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dulce Bocado - Cotizador & Sistema de Gestión</title>
+
+  <!-- CONFIGURACIÓN PWA / APP INSTALABLE -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#c28575">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dulce Bocado">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2682/2682446.png">
   
   <!-- CONEXIONES PREVIAS RÁPIDAS (DNS PREFETCH) -->
   <link rel="preconnect" href="https://dicbaxqpmrhubjmvwwmq.supabase.co" crossorigin>
@@ -155,21 +163,21 @@
                     <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">1 Piso</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">Clásico</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor y 1 Relleno</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">2 Pisos</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">+ de 35 porciones</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor por piso</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">+ de 60 porciones</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">Estructura grande</p>
                     </div>
                   </label>
                 </div>
@@ -226,7 +234,7 @@
             </div>
           </div>
 
-          <!-- NUEVO PASO 3: ESPECIFICACIONES DEL DISEÑO Y NOTAS OBLIGATORIAS -->
+          <!-- PASO 3: ESPECIFICACIONES DEL DISEÑO Y NOTAS OBLIGATORIAS -->
           <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm space-y-5">
             <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
               <span class="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-sm">3</span>
@@ -542,7 +550,7 @@
         <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 rounded-xl transition text-xs">Ingresar al Panel</button>
       </form>
     </div>
-  </div>
+  </footer>
 
   <!-- FOOTER -->
   <footer class="bg-white border-t border-brand-100 mt-12 py-6 text-center text-xs text-gray-500">
@@ -555,7 +563,7 @@
     </div>
   </footer>
 
-  <!-- JAVASCRIPT INTEGRADO CON FORMATO FECHA DD/MM/AAAA Y MÓDULO RECHAZO -->
+  <!-- JAVASCRIPT INTEGRADO CON FORMATO FECHA DD/MM/AAAA, MÓDULO RECHAZO Y SERVICE WORKER PWA -->
   <script>
     const WHATSAPP_TIENDA = "522741686392"; 
     const PIN_EQUIPO_DB = "201217"; 
@@ -1312,7 +1320,7 @@
           tr.className = "hover:bg-red-50/30 transition";
 
           let msgRechazoWa = `📢 *¡HOLA ${item.cliente_nombre.toUpperCase()}! INFORMACIÓN DE TU SOLICITUD EN DULCE BOCADO* 🍰\n\n`;
-          msgRechazoWa += `Una disculpa, no es posible agendar tu pedido (*Folio ${item.folio}*) para el día *${formatDateMX(item.fecha_evento)}*.\n\n`;
+          msgRechazoWa += `Lamentamos informarte que por el momento *no nos es posible procesar tu solicitud de cotización* (*Folio ${item.folio}*) para el día *${formatDateMX(item.fecha_evento)}*.\n\n`;
           msgRechazoWa += `📌 *Motivo:* ${item.motivo_rechazo || 'No disponible para esa fecha'}\n\n`;
           msgRechazoWa += `Agradecemos enormemente tu interés en Dulce Bocado y esperamos poder atenderte en una próxima ocasión. 😊`;
 
@@ -1477,6 +1485,15 @@
 
     function openLoginModal() { document.getElementById('modalLogin').classList.remove('hidden'); }
     function closeLoginModal() { document.getElementById('modalLogin').classList.add('hidden'); }
+
+    // REGISTRAR SERVICE WORKER PARA LA PWA (APP INSTALABLE)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.log('Error al registrar Service Worker:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>
