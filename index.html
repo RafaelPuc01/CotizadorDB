@@ -1320,7 +1320,7 @@
           tr.className = "hover:bg-red-50/30 transition";
 
           let msgRechazoWa = `📢 *¡HOLA ${item.cliente_nombre.toUpperCase()}! INFORMACIÓN DE TU SOLICITUD EN DULCE BOCADO* 🍰\n\n`;
-          msgRechazoWa += `Lamentamos informarte que por el momento *no nos es posible procesar tu solicitud de cotización* (*Folio ${item.folio}*) para el día *${formatDateMX(item.fecha_evento)}*.\n\n`;
+          msgRechazoWa += `Una disculpa, *no es posible agendar tu pedido* (*Folio ${item.folio}*) para el día *${formatDateMX(item.fecha_evento)}*.\n\n`;
           msgRechazoWa += `📌 *Motivo:* ${item.motivo_rechazo || 'No disponible para esa fecha'}\n\n`;
           msgRechazoWa += `Agradecemos enormemente tu interés en Dulce Bocado y esperamos poder atenderte en una próxima ocasión. 😊`;
 
