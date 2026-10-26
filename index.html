@@ -163,20 +163,20 @@
                     <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">1 Piso</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor y 1 Relleno</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">-35 porciones</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="2" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">2 Pisos</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">1 Sabor por piso</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">+ de 35 porciones</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
                     <input type="radio" name="pisos" value="3" onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
-                      <p class="font-bold text-sm text-brand-900">3+ Pisos</p>
+                      <p class="font-bold text-sm text-brand-900">+ de 50 porciones</p>
                       <p class="text-[10px] text-gray-400 mt-0.5">Estructura grande</p>
                     </div>
                   </label>
@@ -382,11 +382,11 @@
         </div>
       </div>
 
-      <!-- BARRA DE BÚSQUEDA -->
+      <!-- BARRA DE BÚSQUEDA AHORA INCLUYE BÚSQUEDA POR TELÉFONO -->
       <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div class="relative w-full sm:w-72">
+        <div class="relative w-full sm:w-80">
           <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
-          <input type="text" id="staffSearchInput" oninput="renderStaffPanels()" placeholder="Buscar por cliente o folio..." class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          <input type="text" id="staffSearchInput" oninput="renderStaffPanels()" placeholder="Buscar por cliente, folio o teléfono..." class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
       </div>
 
@@ -431,7 +431,7 @@
           </div>
         </div>
 
-        <!-- BLOQUE NUEVO: SOLICITUDES RECHAZADAS POR PRODUCCIÓN -->
+        <!-- BLOQUE SOLICITUDES RECHAZADAS POR PRODUCCIÓN -->
         <div class="space-y-3">
           <div class="flex justify-between items-center bg-gray-100 border border-gray-300 p-3.5 rounded-xl">
             <div class="flex items-center space-x-2 text-gray-800 font-bold text-sm">
@@ -459,7 +459,7 @@
           </div>
         </div>
 
-        <!-- BLOQUE 2: YA NOTIFICADAS -->
+        <!-- BLOQUE 2: YA NOTIFICADAS (INCLUYE ACCIÓN DE RE-NOTIFICAR) -->
         <div class="space-y-3">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-emerald-50 border border-emerald-200 p-3 rounded-xl gap-2">
             <div class="flex items-center space-x-2 text-emerald-900 font-bold text-sm">
@@ -488,7 +488,7 @@
                     <th class="p-3">Detalles del Pedido</th>
                     <th class="p-3">Fecha y Horario</th>
                     <th class="p-3">Precio Total</th>
-                    <th class="p-3">Estatus</th>
+                    <th class="p-3 text-right">Acción</th>
                   </tr>
                 </thead>
                 <tbody id="tableVentasDone" class="divide-y divide-gray-100 text-xs"></tbody>
@@ -550,7 +550,7 @@
         <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 rounded-xl transition text-xs">Ingresar al Panel</button>
       </form>
     </div>
-  </footer>
+  </div>
 
   <!-- FOOTER -->
   <footer class="bg-white border-t border-brand-100 mt-12 py-6 text-center text-xs text-gray-500">
@@ -563,7 +563,7 @@
     </div>
   </footer>
 
-  <!-- JAVASCRIPT INTEGRADO CON FORMATO FECHA DD/MM/AAAA, MÓDULO RECHAZO Y SERVICE WORKER PWA -->
+  <!-- JAVASCRIPT INTEGRADO -->
   <script>
     const WHATSAPP_TIENDA = "522741686392"; 
     const PIN_EQUIPO_DB = "201217"; 
@@ -828,7 +828,6 @@
       const notas = document.getElementById('inputNotas').value.trim();
       const tieneFotos = uploadedImagesList.length > 0;
 
-      // REGLA: NOTAS ES AHORA CAMPO OBLIGATORIO
       const isValid = pan !== "" && relleno !== "" && nombre !== "" && tel !== "" && fecha !== "" && horario !== "" && notas !== "" && tieneFotos;
 
       const btn = document.getElementById('btnMandarCotizar');
@@ -1165,13 +1164,42 @@
       return cachedCotizaciones || [];
     }
 
+    // HELPER PARA CONSTRUIR EL ENLACE DE WHATSAPP
+    function buildWhatsAppClientMessage(item) {
+      const fechaLimiteStr = calcularFechaLimite(item.fecha_evento, 4);
+
+      let msgCliente = `✨ *¡HOLA ${item.cliente_nombre.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
+      msgCliente += `Hemos evaluado la solicitud de tu pastel (*Folio ${item.folio}*):\n`;
+      msgCliente += `• *Porciones:* ${item.porciones} porciones (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
+      msgCliente += `• *Bizcocho/Relleno:* ${item.sabor_pan} / ${item.relleno}\n\n`;
+      msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precio_final} MXN*\n`;
+      if (item.notas_produccion) {
+        msgCliente += `💡 *Observaciones de Producción:* ${item.notas_produccion}\n`;
+      }
+      msgCliente += `\n----------------------------------------\n`;
+      msgCliente += `📅 *FECHA DE TU EVENTO:* ${formatDateMX(item.fecha_evento)}\n`;
+      msgCliente += `⏰ *HORARIO:* ${item.horario_entrega || 'Por definir'}\n`;
+      msgCliente += `⚠️ *FECHA LÍMITE DE CONFIRMACIÓN:* ${fechaLimiteStr} (Sujeto a disponibilidad en agenda)\n`;
+      msgCliente += `----------------------------------------\n\n`;
+      msgCliente += `Para reservar tu fecha requerimos un anticipo del 50%.\n`;
+      msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
+
+      const telLimpio = item.cliente_telefono ? item.cliente_telefono.toString().replace(/\D/g, '') : '';
+      return `https://wa.me/52${telLimpio}?text=${encodeURIComponent(msgCliente)}`;
+    }
+
     async function renderStaffPanels(forceRefresh = false) {
       const cotizaciones = await fetchCotizaciones(forceRefresh);
       const searchQuery = document.getElementById('staffSearchInput') ? document.getElementById('staffSearchInput').value.toLowerCase().trim() : "";
       const filterDate = document.getElementById('filterDateNotified') ? document.getElementById('filterDateNotified').value : "";
 
+      // MODIFICACIÓN 1: BÚSQUEDA POR NOMBRE, FOLIO O TELÉFONO
       let filteredData = cotizaciones.filter(item => {
-        return item.cliente_nombre.toLowerCase().includes(searchQuery) || item.folio.toLowerCase().includes(searchQuery);
+        const nombre = (item.cliente_nombre || "").toLowerCase();
+        const folio = (item.folio || "").toLowerCase();
+        const telefono = (item.cliente_telefono || "").toString().toLowerCase();
+
+        return nombre.includes(searchQuery) || folio.includes(searchQuery) || telefono.includes(searchQuery);
       });
 
       // 1. Producción
@@ -1266,26 +1294,7 @@
         pendientesVent.forEach((item) => {
           const tr = document.createElement('tr');
           tr.className = "hover:bg-rose-50/40 transition";
-
-          const fechaLimiteStr = calcularFechaLimite(item.fecha_evento, 4);
-
-          let msgCliente = `✨ *¡HOLA ${item.cliente_nombre.toUpperCase()}! TU COTIZACIÓN EN DULCE BOCADO ESTÁ LISTA* ✨\n\n`;
-          msgCliente += `Hemos evaluado la solicitud de tu pastel (*Folio ${item.folio}*):\n`;
-          msgCliente += `• *Porciones:* ${item.porciones} porciones (${item.pisos} ${item.pisos > 1 ? 'pisos' : 'piso'})\n`;
-          msgCliente += `• *Bizcocho/Relleno:* ${item.sabor_pan} / ${item.relleno}\n\n`;
-          msgCliente += `💰 *PRECIO ESTIMADO TOTAL: $${item.precio_final} MXN*\n`;
-          if (item.notas_produccion) {
-            msgCliente += `💡 *Observaciones de Producción:* ${item.notas_produccion}\n`;
-          }
-          msgCliente += `\n----------------------------------------\n`;
-          msgCliente += `📅 *FECHA DE TU EVENTO:* ${formatDateMX(item.fecha_evento)}\n`;
-          msgCliente += `⏰ *HORARIO:* ${item.horario_entrega || 'Por definir'}\n`;
-          msgCliente += `⚠️ *FECHA LÍMITE DE CONFIRMACIÓN:* ${fechaLimiteStr} (Sujeto a disponibilidad en agenda)\n`;
-          msgCliente += `----------------------------------------\n\n`;
-          msgCliente += `Para reservar tu fecha requerimos un anticipo del 50%.\n`;
-          msgCliente += `¿Te gustaría confirmar tu pedido? 😊`;
-
-          const waLink = `https://wa.me/52${item.cliente_telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgCliente)}`;
+          const waLink = buildWhatsAppClientMessage(item);
 
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-brand-900">${item.folio}</td>
@@ -1324,7 +1333,8 @@
           msgRechazoWa += `📌 *Motivo:* ${item.motivo_rechazo || 'No disponible para esa fecha'}\n\n`;
           msgRechazoWa += `Agradecemos enormemente tu interés en Dulce Bocado y esperamos poder atenderte en una próxima ocasión. 😊`;
 
-          const waLinkRechazo = `https://wa.me/52${item.cliente_telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msgRechazoWa)}`;
+          const telLimpio = item.cliente_telefono ? item.cliente_telefono.toString().replace(/\D/g, '') : '';
+          const waLinkRechazo = `https://wa.me/52${telLimpio}?text=${encodeURIComponent(msgRechazoWa)}`;
 
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
@@ -1342,7 +1352,7 @@
         });
       }
 
-      // 4. Ventas (Ya Notificadas)
+      // 4. Ventas (Ya Notificadas - MODIFICACIÓN 2: BOTÓN RE-NOTIFICAR)
       const tbodyVentDone = document.getElementById('tableVentasDone');
       tbodyVentDone.innerHTML = "";
       
@@ -1355,7 +1365,7 @@
       document.getElementById('badgeVentasDone').innerText = `${notificadasVent.length} enviadas`;
 
       if (notificadasVent.length === 0) {
-        tbodyVentDone.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400 italic">No hay cotizaciones notificadas para esta fecha.</td></tr>`;
+        tbodyVentDone.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400 italic">No hay cotizaciones notificadas para esta fecha o criterio de búsqueda.</td></tr>`;
       } else {
         notificadasVent.forEach((item) => {
           const tr = document.createElement('tr');
@@ -1372,6 +1382,8 @@
             fotosHtml = `<span class="text-gray-400 text-[10px] italic">Sin fotos</span>`;
           }
 
+          const waLinkReNotificar = buildWhatsAppClientMessage(item);
+
           tr.innerHTML = `
             <td class="p-3 font-mono font-bold text-gray-700">${item.folio}</td>
             <td class="p-3">${fotosHtml}</td>
@@ -1384,7 +1396,12 @@
             </td>
             <td class="p-3 font-medium text-brand-900 whitespace-nowrap">📅 ${formatDateMX(item.fecha_evento)}<br><span class="text-xs text-gray-600">⏰ ${item.horario_entrega || 'Por definir'}</span></td>
             <td class="p-3 font-bold text-emerald-700 whitespace-nowrap">$${item.precio_final} MXN</td>
-            <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px] whitespace-nowrap">✓ Notificado</span></td>
+            <td class="p-3 text-right whitespace-nowrap">
+              <a href="${waLinkReNotificar}" target="_blank" class="inline-flex items-center space-x-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition border border-emerald-300 shadow-sm" title="Reenviar la cotización al cliente por WhatsApp">
+                <i class="fab fa-whatsapp text-emerald-600 text-xs"></i>
+                <span>Volver a Notificar</span>
+              </a>
+            </td>
           `;
           tbodyVentDone.appendChild(tr);
         });
