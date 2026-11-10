@@ -122,7 +122,7 @@
         
         <!-- BANNER DE MODO EDICIÓN -->
         <div id="bannerEditMode" class="hidden mt-3 bg-amber-100 border border-amber-300 text-amber-900 px-4 py-2 rounded-xl text-xs flex justify-between items-center shadow-sm">
-          <span>✏️ <b>Modo Edición Activado:</b> Modificando la cotización <b id="editingFolioLabel">#DB-0000</b>.</span>
+          <span>✏️ <b>Modo Edición Activado:</b> Modificando la cotización <b id="editingFolioLabel">#DB-0000000</b>.</span>
           <button type="button" onclick="cancelEditMode()" class="text-amber-900 font-bold underline hover:text-red-600 ml-2">Cancelar Edición</button>
         </div>
       </div>
@@ -163,7 +163,7 @@
                     <input type="radio" name="pisos" value="1" checked onclick="updateSummary()" class="peer hidden">
                     <div class="border-2 border-gray-100 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 p-3 rounded-xl text-center transition">
                       <p class="font-bold text-sm text-brand-900">1 Piso</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">- de 35 porciones</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">*</p>
                     </div>
                   </label>
                   <label class="cursor-pointer">
@@ -310,7 +310,7 @@
           <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-md space-y-5">
             <h3 class="font-serif font-bold text-xl text-brand-900 border-b border-gray-100 pb-3 flex items-center justify-between">
               <span>RESUMEN</span>
-              <span id="summaryFolio" class="text-xs font-mono font-normal text-brand-600 bg-brand-50 px-2 py-0.5 rounded">#DB-8492</span>
+              <span id="summaryFolio" class="text-xs font-mono font-normal text-brand-600 bg-brand-50 px-2 py-0.5 rounded">#DB-0000000</span>
             </h3>
 
             <div class="space-y-2.5 text-xs">
@@ -511,11 +511,11 @@
       <div class="text-center space-y-1">
         <div class="w-10 h-10 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center mx-auto text-lg"><i class="fas fa-search"></i></div>
         <h3 class="font-serif font-bold text-xl text-brand-900">Consulta tu Cotización</h3>
-        <p class="text-xs text-gray-500">Ingresa tu número de folio (Ejemplo: #DB-8492)</p>
+        <p class="text-xs text-gray-500">Ingresa tu número de folio (Ejemplo: #DB-8492014)</p>
       </div>
 
       <div class="flex gap-2">
-        <input type="text" id="trackerInput" placeholder="#DB-XXXX" class="flex-grow border border-gray-300 rounded-xl p-2.5 font-mono text-center text-sm uppercase focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        <input type="text" id="trackerInput" placeholder="#DB-XXXXXXX" class="flex-grow border border-gray-300 rounded-xl p-2.5 font-mono text-center text-sm uppercase focus:ring-2 focus:ring-brand-500 focus:outline-none">
         <button onclick="searchFolioStatus()" class="bg-brand-700 hover:bg-brand-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">Buscar</button>
       </div>
 
@@ -558,7 +558,7 @@
       <p>© 2026 Dulce Bocado Tierra Blanca. Todos los derechos reservados.</p>
       <button onclick="openLoginModal()" class="text-gray-400 hover:text-brand-600 transition flex items-center space-x-1 text-[11px]">
         <i class="fas fa-user-shield"></i>
-        <span>Acceso Staff / Producción</span>
+        <span>/</span>
       </button>
     </div>
   </footer>
@@ -588,8 +588,13 @@
       return _supabase;
     }
 
+    // NUEVA FUNCIÓN: GENERACIÓN DE FOLIOS ÚNICOS (7 DÍGITOS)
     function generateFolio() {
-      return '#DB-' + Math.floor(1000 + Math.random() * 9000);
+      // Toma los últimos 4 dígitos del tiempo actual + 3 dígitos aleatorios
+      // Ejemplo: #DB-8492014, #DB-1593842
+      const timePart = Date.now().toString().slice(-4);
+      const randomPart = Math.floor(100 + Math.random() * 900);
+      return `#DB-${timePart}${randomPart}`;
     }
 
     // FORMATEAR FECHA A DD/MM/AAAA (EVENTO)
@@ -1029,7 +1034,7 @@
       document.getElementById('badgeFormTitle').className = "text-amber-700 text-xs font-extrabold uppercase tracking-widest bg-amber-100 px-3 py-1 rounded-full";
       document.getElementById('headingFormTitle').innerText = `Editar Cotización ${currentFolio}`;
       document.getElementById('editingFolioLabel').innerText = currentFolio;
-      document.getElementById('bannerEditMode').classList.remove('hidden');
+      document.getElementById('bannerEditMode').classList.add('hidden');
 
       document.getElementById('inputNombre').value = record.cliente_nombre || "";
       document.getElementById('inputTel').value = record.cliente_telefono || "";
@@ -1210,7 +1215,6 @@
       const searchQuery = document.getElementById('staffSearchInput') ? document.getElementById('staffSearchInput').value.toLowerCase().trim() : "";
       const filterDate = document.getElementById('filterDateNotified') ? document.getElementById('filterDateNotified').value : "";
 
-      // FILTRADO EXTENDIDO: INCLUYE FECHA DE CREACIÓN
       let filteredData = cotizaciones.filter(item => {
         const nombre = (item.cliente_nombre || "").toLowerCase();
         const folio = (item.folio || "").toLowerCase();
